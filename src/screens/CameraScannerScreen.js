@@ -2,26 +2,28 @@ import React, { useState } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { X } from 'lucide-react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const CameraScannerScreen = ({ route, navigation }) => {
   const { roomId } = route?.params || {};
+  const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
 
   if (!permission) {
     // Camera permissions are still loading
-    return <View style={styles.container}><Text style={styles.statusText}>Cargando permisos...</Text></View>;
+    return <View style={styles.container}><Text style={styles.statusText}>{t('scanner.loading_permissions') || "Cargando permisos..."}</Text></View>;
   }
 
   if (!permission.granted) {
     // Camera permissions are not granted yet
     return (
       <View style={styles.container}>
-        <Text style={styles.permissionText}>Necesitamos tu permiso para mostrar la cámara</Text>
+        <Text style={styles.permissionText}>{t('scanner.permission_needed') || "Necesitamos tu permiso para mostrar la cámara"}</Text>
         <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-          <Text style={styles.buttonText}>Conceder permiso</Text>
+          <Text style={styles.buttonText}>{t('scanner.grant_permission') || "Conceder permiso"}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -37,7 +39,7 @@ const CameraScannerScreen = ({ route, navigation }) => {
 
     try {
       // Guardar el id_unico generado localmente para usarlo en la conexión WebSocket
-      await AsyncStorage.setItem('deviceId', id_unico);
+      await SecureStore.setItemAsync('device_unique_id', id_unico);
       
       const response = await api.post('/salas/link-device/', {
         invite_code,
@@ -45,8 +47,8 @@ const CameraScannerScreen = ({ route, navigation }) => {
       });
       
       Alert.alert(
-        "Vinculado",
-        "Dispositivo vinculado correctamente a la sala.",
+        t('scanner.linked_title') || "Vinculado",
+        t('scanner.linked_success') || "Dispositivo vinculado correctamente a la sala.",
         [
           {
             text: "OK",
@@ -57,11 +59,11 @@ const CameraScannerScreen = ({ route, navigation }) => {
     } catch (error) {
       console.error("Error al vincular el dispositivo:", error);
       Alert.alert(
-        "Error",
-        "No se pudo vincular el dispositivo. Intente de nuevo.",
+        t('common.error'),
+        t('scanner.link_error') || "No se pudo vincular el dispositivo. Intente de nuevo.",
         [
           {
-            text: "Reintentar",
+            text: t('common.retry') || "Reintentar",
             onPress: () => setScanned(false)
           }
         ]
@@ -84,7 +86,7 @@ const CameraScannerScreen = ({ route, navigation }) => {
       
       <View style={styles.overlay}>
           <View style={styles.scanFrame} />
-          <Text style={styles.scanText}>Escanea el código QR del dispositivo</Text>
+          <Text style={styles.scanText}>{t('scanner.scan_instructions') || "Escanea el código QR del dispositivo"}</Text>
       </View>
     </View>
   );

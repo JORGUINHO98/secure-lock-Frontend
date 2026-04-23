@@ -1,8 +1,7 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
-// Reemplazar TU_IP con la IP de la máquina donde corre el backend de Django
-const BASE_URL = 'http://192.168.1.100:8000';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.100:8000/api/';
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -12,12 +11,12 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   async (config) => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
+      const token = await SecureStore.getItemAsync('userToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (e) {
-      console.log('Error obteniendo el token de AsyncStorage', e);
+      console.log('Error obteniendo el token de SecureStore', e);
     }
     return config;
   },

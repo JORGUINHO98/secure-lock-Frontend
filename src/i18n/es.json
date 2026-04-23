@@ -1,0 +1,88 @@
+{
+  "common": {
+    "welcome": "Bienvenido",
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar Sesión",
+    "home": "Inicio",
+    "rooms": "Salas",
+    "account": "Cuenta",
+    "settings": "Configuración",
+    "language": "Idioma",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "success": "Éxito",
+    "error": "Error",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "create": "Crear",
+    "viewMore": "Ver Más",
+    "user": "Usuario",
+    "retry": "Reintentar"
+  },
+  "auth": {
+    "title": "SECURE LOCK",
+    "subtitle": "control parental inteligente para dispositivos",
+    "fullName": "Nombre Completo",
+    "email": "Email",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "createAccount": "Crear Cuenta"
+  },
+  "home": {
+    "welcome_user": "Bienvenido: {{name}}",
+    "scan_qr": "Escanear QR",
+    "scan_qr_sub": "Vincular este dispositivo a una sala",
+    "control_devices": "Controlar Dispositivos",
+    "hero_subtitle": "bloqueo total de dispositivos de forma remota"
+  },
+  "rooms": {
+    "title": "Mis Salas",
+    "no_rooms": "No hay salas aún",
+    "no_rooms_sub": "Pulsa el botón (+) para crear tu primera sala y empezar a gestionar tus dispositivos.",
+    "new_room": "Nueva Sala",
+    "edit_room": "Editar Sala",
+    "room_name_placeholder": "Nombre de la sala...",
+    "limit_reached": "Límite alcanzado",
+    "limit_reached_sub": "Alcanzaste el límite de salas gratuitas. ¡Hazte Premium para crear salas ilimitadas!",
+    "delete_title": "Eliminar Sala",
+    "delete_confirm": "¿Estás seguro que quieres eliminar esta sala?"
+  },
+  "account": {
+    "personal_data": "Datos Personales",
+    "change_photo": "Cambiar Foto",
+    "phone": "Teléfono",
+    "location": "Ubicación",
+    "premium_plan": "Adquirir Plan Premium",
+    "update_success": "Tus datos han sido actualizados correctamente."
+  },
+  "roomDetails": {
+    "block_all_title": "Bloquear toda la sala",
+    "block_all_confirm": "¿Estás seguro que quieres bloquear todos los dispositivos de la sala \"{{roomName}}\"?",
+    "block_all": "Bloquear Todo",
+    "block_success": "Todos los dispositivos de esta sala han sido bloqueados.",
+    "delete_device_title": "Eliminar Dispositivo",
+    "delete_device_confirm": "¿Estás seguro que quieres eliminar este dispositivo?",
+    "active": "Activo",
+    "locked": "Bloqueado",
+    "block_all_room": "Bloquear Sala Completa",
+    "show_qr": "Mostrar QR de la Sala",
+    "edit_device": "Editar Dispositivo",
+    "device_name_placeholder": "Nombre del dispositivo..."
+  },
+  "lock": {
+    "device_free": "Dispositivo Libre",
+    "waiting": "ESPERANDO ÓRDENES...",
+    "device_locked": "DISPOSITIVO BLOQUEADO",
+    "protection_active": "PROTECCIÓN ACTIVA"
+  },
+  "scanner": {
+    "loading_permissions": "Cargando permisos...",
+    "permission_needed": "Necesitamos tu permiso para mostrar la cámara",
+    "grant_permission": "Conceder permiso",
+    "linked_title": "Vinculado",
+    "linked_success": "Dispositivo vinculado correctamente a la sala.",
+    "link_error": "No se pudo vincular el dispositivo. Intente de nuevo.",
+    "scan_instructions": "Escanea el código QR del dispositivo"
+  }
+}

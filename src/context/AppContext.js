@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from '../services/api';
+import * as SecureStore from 'expo-secure-store';
 
 const AppContext = createContext();
 
@@ -8,6 +9,7 @@ export const AppProvider = ({ children }) => {
   const [isPremium, setIsPremium] = useState(false);
   const [roomDevices, setRoomDevices] = useState({}); // { roomId: [devices] }
   const [theme, setTheme] = useState('light'); // 'light' or 'dark'
+  const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState(null);
 
   // Función para verificar el estado premium desde el backend
@@ -23,6 +25,41 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Cargar usuario desde SecureStore al iniciar
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const savedUser = await SecureStore.getItemAsync('userData');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        }
+      } catch (error) {
+        console.log('Error cargando usuario de SecureStore', error);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+    loadUser();
+  }, []);
+
+  // Guardar usuario en SecureStore cuando cambie (solo después de la carga inicial)
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const saveUser = async () => {
+      try {
+        if (user) {
+          await SecureStore.setItemAsync('userData', JSON.stringify(user));
+        } else {
+          await SecureStore.deleteItemAsync('userData');
+        }
+      } catch (error) {
+        console.log('Error guardando usuario en SecureStore', error);
+      }
+    };
+    saveUser();
+  }, [user, isInitialized]);
+
   useEffect(() => {
     if (user) {
       checkPremiumStatus();
@@ -33,9 +70,14 @@ export const AppProvider = ({ children }) => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsPremium(false);
+  const logout = async () => {
+    try {
+      await SecureStore.deleteItemAsync('userToken');
+      setUser(null);
+      setIsPremium(false);
+    } catch (error) {
+      console.log('Error deleting token on logout', error);
+    }
   };
 
   const addRoom = (name) => {

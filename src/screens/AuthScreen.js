@@ -12,7 +12,9 @@ import {
   Dimensions
 } from 'react-native';
 import { BlurView } from 'expo-blur';
+import * as SecureStore from 'expo-secure-store';
 import { User, Mail, Lock, ShieldCheck } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING } from '../theme/colors';
 import CustomInput from '../components/CustomInput';
 import { useAppContext } from '../context/AppContext';
@@ -21,6 +23,7 @@ const { width } = Dimensions.get('window');
 
 const AuthScreen = ({ navigation }) => {
   const { setUser } = useAppContext();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('register'); // Default to 'register' to match the image
   const [form, setForm] = useState({
     fullName: '',
@@ -33,26 +36,34 @@ const AuthScreen = ({ navigation }) => {
     setForm({ ...form, [field]: value });
   };
 
-  const handleSubmit = () => {
-    if (activeTab === 'login') {
-      // Simular login
-      setUser({
-        name: form.fullName || form.email.split('@')[0], // Fallback al nombre de usuario del email
-        email: form.email
-      });
-    } else {
-      // Simular registro
-      setUser({
-        name: form.fullName,
-        email: form.email
-      });
+  const handleSubmit = async () => {
+    try {
+      // En un entorno real, aquí se obtendría el token del backend
+      const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_token";
+      await SecureStore.setItemAsync('userToken', mockToken);
+
+      if (activeTab === 'login') {
+        // Simular login
+        setUser({
+          name: form.fullName || form.email.split('@')[0], // Fallback al nombre de usuario del email
+          email: form.email
+        });
+      } else {
+        // Simular registro
+        setUser({
+          name: form.fullName,
+          email: form.email
+        });
+      }
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error("Error saving token:", error);
     }
-    navigation.navigate('Home');
   };
 
   return (
     <ImageBackground 
-      source={require('../assets/images/background.png')} 
+      source={require('../../assets/background.png')} 
       style={styles.background}
       resizeMode="cover"
     >
@@ -64,12 +75,12 @@ const AuthScreen = ({ navigation }) => {
           {/* Logo and Title */}
           <View style={styles.header}>
             <Image 
-              source={require('../assets/images/logo.png')} 
+              source={require('../../assets/logo.png')} 
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.title}>SECURE LOCK</Text>
-            <Text style={styles.subtitle}>control parental inteligente para dispositivos</Text>
+            <Text style={styles.title}>{t('auth.title')}</Text>
+            <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
           </View>
 
           {/* Auth Card */}
@@ -80,13 +91,13 @@ const AuthScreen = ({ navigation }) => {
                 style={[styles.tab, activeTab === 'login' && styles.activeTab]} 
                 onPress={() => setActiveTab('login')}
               >
-                <Text style={[styles.tabText, activeTab === 'login' && styles.activeTabText]}>Iniciar Sesión</Text>
+                <Text style={[styles.tabText, activeTab === 'login' && styles.activeTabText]}>{t('common.login')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.tab, activeTab === 'register' && styles.activeTab]} 
                 onPress={() => setActiveTab('register')}
               >
-                <Text style={[styles.tabText, activeTab === 'register' && styles.activeTabText]}>Registrarse</Text>
+                <Text style={[styles.tabText, activeTab === 'register' && styles.activeTabText]}>{t('common.register')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -94,7 +105,7 @@ const AuthScreen = ({ navigation }) => {
             <View style={styles.form}>
               {activeTab === 'register' && (
                 <CustomInput
-                  label="Nombre Completo"
+                  label={t('auth.fullName')}
                   placeholder="Juan Pérez"
                   icon={User}
                   value={form.fullName}
@@ -103,7 +114,7 @@ const AuthScreen = ({ navigation }) => {
               )}
 
               <CustomInput
-                label="Email"
+                label={t('auth.email')}
                 placeholder="tu@email.com"
                 icon={Mail}
                 value={form.email}
@@ -112,7 +123,7 @@ const AuthScreen = ({ navigation }) => {
               />
 
               <CustomInput
-                label="Contraseña"
+                label={t('auth.password')}
                 placeholder="........"
                 icon={Lock}
                 secureTextEntry
@@ -122,7 +133,7 @@ const AuthScreen = ({ navigation }) => {
 
               {activeTab === 'register' && (
                 <CustomInput
-                  label="Confirmar Contraseña"
+                  label={t('auth.confirmPassword')}
                   placeholder="........"
                   icon={Lock}
                   secureTextEntry
@@ -134,7 +145,7 @@ const AuthScreen = ({ navigation }) => {
               {/* Submit Button */}
               <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                 <Text style={styles.buttonText}>
-                  {activeTab === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+                  {activeTab === 'login' ? t('common.login') : t('auth.createAccount')}
                 </Text>
               </TouchableOpacity>
             </View>

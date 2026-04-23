@@ -12,6 +12,7 @@ import { Platform, View,
   TextInput,
   Alert } from 'react-native';
 import { Undo2, QrCode, Smartphone, Tablet, CheckCircle2, XCircle, Home, Users, User, Pencil, Trash2, Lock } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { COLORS } from '../theme/colors';
 import PremiumScreen from './PremiumScreen';
@@ -21,6 +22,7 @@ const { width } = Dimensions.get('window');
 const RoomDetailsScreen = ({ route, navigation }) => {
   const { roomId, roomName, scanResult } = route.params;
   const { roomDevices, addDeviceToRoom, updateDevice, deleteDevice, blockAllDevicesInRoom, theme } = useAppContext();
+  const { t } = useTranslation();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [premiumVisible, setPremiumVisible] = useState(false);
   const [currentDevice, setCurrentDevice] = useState(null);
@@ -40,16 +42,16 @@ const RoomDetailsScreen = ({ route, navigation }) => {
 
   const handleBlockAllRoom = () => {
     Alert.alert(
-      "Bloquear toda la sala",
-      `¿Estás seguro que quieres bloquear todos los dispositivos de la sala "${roomName}"?`,
+      t('roomDetails.block_all_title') || "Bloquear toda la sala",
+      t('roomDetails.block_all_confirm', { roomName }) || `¿Estás seguro que quieres bloquear todos los dispositivos de la sala "${roomName}"?`,
       [
-        { text: "Cancelar", style: "cancel" },
+        { text: t('common.cancel'), style: "cancel" },
         { 
-          text: "Bloquear Todo", 
+          text: t('roomDetails.block_all') || "Bloquear Todo", 
           style: "destructive", 
           onPress: () => {
             blockAllDevicesInRoom(roomId);
-            Alert.alert("Éxito", "Todos los dispositivos de esta sala han sido bloqueados.");
+            Alert.alert(t('common.success'), t('roomDetails.block_success') || "Todos los dispositivos de esta sala han sido bloqueados.");
           }
         }
       ]
@@ -72,29 +74,30 @@ const RoomDetailsScreen = ({ route, navigation }) => {
 
   const handleDeleteDevice = (deviceId) => {
     Alert.alert(
-        "Eliminar Dispositivo",
-        "¿Estás seguro que quieres eliminar este dispositivo?",
+        t('roomDetails.delete_device_title') || "Eliminar Dispositivo",
+        t('roomDetails.delete_device_confirm') || "¿Estás seguro que quieres eliminar este dispositivo?",
         [
-            { text: "Cancelar", style: "cancel" },
-            { text: "Eliminar", style: "destructive", onPress: () => deleteDevice(roomId, deviceId) }
+            { text: t('common.cancel'), style: "cancel" },
+            { text: t('common.delete'), style: "destructive", onPress: () => deleteDevice(roomId, deviceId) }
         ]
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#D9D9D9' }]}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={40} color={isDark ? '#FFF' : '#000'} />
+          <Undo2 size={40} color={isDark ? '#FFF' : '#1E234C'} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#000' }]}>{roomName}</Text>
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>{roomName}</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={[styles.content, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
+      <ScrollView style={[styles.content, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
         {devices.map((device) => (
           <View key={device.id} style={[styles.deviceCard, { backgroundColor: isDark ? '#333' : '#D9D9D9' }]}>
             <View style={styles.deviceIconBox}>
@@ -120,16 +123,16 @@ const RoomDetailsScreen = ({ route, navigation }) => {
                 {device.status === 'Activo' || device.status === 'Desbloqueado' ? (
                     <View style={styles.statusBadge}>
                         <CheckCircle2 size={24} color={COLORS.green} />
-                        <Text style={[styles.statusText, { color: COLORS.green }]}>Activo</Text>
+                        <Text style={[styles.statusText, { color: COLORS.green }]}>{t('roomDetails.active') || "Activo"}</Text>
                     </View>
                 ) : (
                     <View style={styles.statusBadge}>
                         <XCircle size={24} color={COLORS.red} />
-                        <Text style={[styles.statusText, { color: COLORS.red }]}>Bloqueado</Text>
+                        <Text style={[styles.statusText, { color: COLORS.red }]}>{t('roomDetails.locked') || "Bloqueado"}</Text>
                     </View>
                 )}
                 <TouchableOpacity onPress={() => navigation.navigate('DeviceControl', { roomId, deviceId: device.id, roomName })}>
-                    <Text style={styles.verMasText}>Ver Mas</Text>
+                    <Text style={styles.verMasText}>{t('common.viewMore')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -137,21 +140,22 @@ const RoomDetailsScreen = ({ route, navigation }) => {
         ))}
         <View style={{ height: 100 }} />
       </ScrollView>
+      </View>
 
       {/* Action Buttons */}
-      <View style={{ paddingHorizontal: 20, paddingBottom: 10, backgroundColor: isDark ? '#1A1A1A' : '#FFF' }}>
+      <View style={{ paddingHorizontal: 20, paddingBottom: 10, backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }}>
           {/* Block All Button */}
           {devices.length > 0 && (
             <TouchableOpacity style={styles.blockAllButton} onPress={handleBlockAllRoom}>
               <Lock size={24} color="#FFF" />
-              <Text style={styles.blockAllButtonText}>Bloquear Sala Completa</Text>
+              <Text style={styles.blockAllButtonText}>{t('roomDetails.block_all_room') || "Bloquear Sala Completa"}</Text>
             </TouchableOpacity>
           )}
 
           {/* Show QR Button */}
           <TouchableOpacity style={[styles.showQrButton, { backgroundColor: isDark ? '#4FB3C3' : '#4FB3C3' }]} onPress={() => navigation.navigate('QRCode', { roomId, roomName })}>
             <QrCode size={24} color="#FFF" />
-            <Text style={styles.showQrButtonText}>Mostrar QR de la Sala</Text>
+            <Text style={styles.showQrButtonText}>{t('roomDetails.show_qr') || "Mostrar QR de la Sala"}</Text>
           </TouchableOpacity>
       </View>
 
@@ -159,12 +163,12 @@ const RoomDetailsScreen = ({ route, navigation }) => {
       <Modal visible={editModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: isDark ? '#2D2D2D' : '#D9D9D9' }]}>
-            <Text style={[styles.modalTitle, { color: isDark ? '#FFF' : '#000' }]}>Editar Dispositivo</Text>
+            <Text style={[styles.modalTitle, { color: isDark ? '#FFF' : '#000' }]}>{t('roomDetails.edit_device') || "Editar Dispositivo"}</Text>
             <TextInput
               style={[styles.modalInput, { color: isDark ? '#FFF' : '#000', borderBottomColor: isDark ? '#4FB3C3' : '#6C5CE7' }]}
               value={deviceNameInput}
               onChangeText={setDeviceNameInput}
-              placeholder="Nombre del dispositivo..."
+              placeholder={t('roomDetails.device_name_placeholder') || "Nombre del dispositivo..."}
               placeholderTextColor="#888"
               autoFocus
             />
@@ -173,13 +177,13 @@ const RoomDetailsScreen = ({ route, navigation }) => {
                 style={[styles.modalButton, styles.cancelButton]} 
                 onPress={() => setEditModalVisible(false)}
               >
-                <Text style={styles.buttonText}>Cancelar</Text>
+                <Text style={styles.buttonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.modalButton, styles.confirmButton]} 
                 onPress={handleUpdateDevice}
               >
-                <Text style={[styles.buttonText, { color: '#FFF' }]}>Guardar</Text>
+                <Text style={[styles.buttonText, { color: '#FFF' }]}>{t('common.save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -191,15 +195,15 @@ const RoomDetailsScreen = ({ route, navigation }) => {
       <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#B0B0B0' }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
           <Home size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Inicio</Text>
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
           <Users size={32} color={isDark ? '#4FB3C3' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#4FB3C3' : '#000' }]}>Salas</Text>
+          <Text style={[styles.navText, { color: isDark ? '#4FB3C3' : '#000' }]}>{t('common.rooms')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
           <User size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Cuenta</Text>
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.account')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -210,35 +214,44 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
-    backgroundColor: '#FFF',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#D9D9D9',
+    paddingTop: 55,
+    paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#000',
   },
   backButton: {
     padding: 5,
   },
+  contentWrapper: {
+    flex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    overflow: 'hidden',
+  },
   content: {
     flex: 1,
-    backgroundColor: '#FFF',
   },
   deviceCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#D9D9D9',
-    marginVertical: 1,
+    marginHorizontal: 15,
+    marginVertical: 6,
     padding: 15,
     height: 120,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
   },
   deviceIconBox: {
     width: 80,

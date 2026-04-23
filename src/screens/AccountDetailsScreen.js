@@ -10,104 +10,137 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert
+  Alert,
+  Dimensions
 } from 'react-native';
 import { ChevronLeft, User, Mail, Phone, MapPin, Save } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 
+const { width } = Dimensions.get('window');
+
+// InputField definido FUERA del componente para evitar que el teclado se cierre al escribir
+const InputField = ({ icon: Icon, label, value, onChangeText, keyboardType = 'default', editable = true, isDark = false }) => (
+  <View style={styles.inputContainer}>
+    <Text style={[styles.label, { color: isDark ? '#AAA' : '#666' }]}>{label}</Text>
+    <View style={[styles.inputWrapper, { backgroundColor: isDark ? (editable ? '#333' : '#2A2A2A') : (editable ? '#F5F5F5' : '#E8E8E8') }]}>
+      <Icon size={20} color={editable ? (isDark ? '#FFF' : '#333') : (isDark ? '#666' : '#999')} style={styles.inputIcon} />
+      <TextInput
+        style={[styles.input, { color: isDark ? (editable ? '#FFF' : '#888') : (editable ? '#000' : '#888') }]}
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        placeholderTextColor={isDark ? '#666' : '#999'}
+        editable={editable}
+      />
+    </View>
+  </View>
+);
+
 const AccountDetailsScreen = ({ navigation }) => {
-  const { theme, user } = useAppContext();
+  const { theme, user, setUser } = useAppContext();
+  const { t } = useTranslation();
   const isDark = theme === 'dark';
 
   const [formData, setFormData] = useState({
-    name: user?.name || 'Usuario',
-    email: user?.email || 'usuario@ejemplo.com',
-    phone: user?.phone || '+1 234 567 890',
-    location: user?.location || 'Ciudad, País',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    location: user?.location || '',
   });
 
+  // Actualizar el formulario cuando los datos del usuario estén disponibles
+  React.useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        location: user.location || '',
+      });
+    }
+  }, [user]);
+
   const handleSave = () => {
-    Alert.alert("Éxito", "Tus datos han sido actualizados correctamente.");
+    setUser({
+      ...user,
+      name: formData.name,
+      phone: formData.phone,
+      location: formData.location,
+      // email no se modifica, se mantiene el original
+    });
+    Alert.alert(t('common.success'), t('account.update_success') || "Tus datos han sido actualizados correctamente.");
     navigation.goBack();
   };
 
-  const InputField = ({ icon: Icon, label, value, onChangeText, keyboardType = 'default' }) => (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.label, { color: isDark ? '#AAA' : '#666' }]}>{label}</Text>
-      <View style={[styles.inputWrapper, { backgroundColor: isDark ? '#333' : '#F5F5F5' }]}>
-        <Icon size={20} color={isDark ? '#FFF' : '#333'} style={styles.inputIcon} />
-        <TextInput
-          style={[styles.input, { color: isDark ? '#FFF' : '#000' }]}
-          value={value}
-          onChangeText={onChangeText}
-          keyboardType={keyboardType}
-          placeholderTextColor={isDark ? '#666' : '#999'}
-        />
-      </View>
-    </View>
-  );
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeft size={28} color={isDark ? '#FFF' : '#000'} />
+          <ChevronLeft size={32} color={isDark ? '#FFF' : '#1E234C'} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#000' }]}>Datos Personales</Text>
-        <View style={{ width: 28 }} />
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>{t('account.personal_data')}</Text>
+        <View style={{ width: 32 }} />
       </View>
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.avatarContainer}>
-            <View style={[styles.avatar, { backgroundColor: '#6C5CE7' }]}>
-              <User size={60} color="#FFF" />
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <View style={styles.avatarContainer}>
+              <View style={[styles.avatar, { backgroundColor: '#6C5CE7' }]}>
+                <User size={60} color="#FFF" />
+              </View>
+              <TouchableOpacity style={styles.changeAvatarButton}>
+                <Text style={styles.changeAvatarText}>{t('account.change_photo')}</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.changeAvatarButton}>
-              <Text style={styles.changeAvatarText}>Cambiar Foto</Text>
-            </TouchableOpacity>
-          </View>
 
-          <View style={styles.form}>
-            <InputField 
-              icon={User} 
-              label="Nombre Completo" 
-              value={formData.name}
-              onChangeText={(text) => setFormData({...formData, name: text})}
-            />
-            <InputField 
-              icon={Mail} 
-              label="Correo Electrónico" 
-              value={formData.email}
-              onChangeText={(text) => setFormData({...formData, email: text})}
-              keyboardType="email-address"
-            />
-            <InputField 
-              icon={Phone} 
-              label="Teléfono" 
-              value={formData.phone}
-              onChangeText={(text) => setFormData({...formData, phone: text})}
-              keyboardType="phone-pad"
-            />
-            <InputField 
-              icon={MapPin} 
-              label="Ubicación" 
-              value={formData.location}
-              onChangeText={(text) => setFormData({...formData, location: text})}
-            />
+            <View style={styles.form}>
+              <InputField 
+                icon={User} 
+                label={t('auth.fullName')} 
+                value={formData.name}
+                onChangeText={(text) => setFormData(prev => ({...prev, name: text}))}
+                isDark={isDark}
+              />
+              <InputField 
+                icon={Mail} 
+                label={t('auth.email')} 
+                value={formData.email}
+                onChangeText={() => {}}
+                keyboardType="email-address"
+                editable={false}
+                isDark={isDark}
+              />
+              <InputField 
+                icon={Phone} 
+                label={t('account.phone')} 
+                value={formData.phone}
+                onChangeText={(text) => setFormData(prev => ({...prev, phone: text}))}
+                keyboardType="phone-pad"
+                isDark={isDark}
+              />
+              <InputField 
+                icon={MapPin} 
+                label={t('account.location')} 
+                value={formData.location}
+                onChangeText={(text) => setFormData(prev => ({...prev, location: text}))}
+                isDark={isDark}
+              />
 
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Save size={20} color="#FFF" style={{ marginRight: 10 }} />
-              <Text style={styles.saveButtonText}>Guardar Cambios</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Save size={20} color="#FFF" style={{ marginRight: 10 }} />
+                <Text style={styles.saveButtonText}>{t('common.save')}</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -115,23 +148,32 @@ const AccountDetailsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingTop: 55,
+    paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   backButton: {
     padding: 5,
   },
+  contentWrapper: {
+    flex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    overflow: 'hidden',
+  },
   scrollContent: {
     paddingBottom: 40,
+    paddingHorizontal: 10,
   },
   avatarContainer: {
     alignItems: 'center',
@@ -158,7 +200,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   form: {
-    paddingHorizontal: 25,
+    paddingHorizontal: 20,
   },
   inputContainer: {
     marginBottom: 20,
@@ -172,9 +214,14 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 15,
     paddingHorizontal: 15,
-    height: 55,
+    height: 60,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
   },
   inputIcon: {
     marginRight: 12,
@@ -186,8 +233,8 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: '#6C5CE7',
     flexDirection: 'row',
-    height: 55,
-    borderRadius: 12,
+    height: 60,
+    borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,

@@ -12,6 +12,7 @@ import { Platform, View,
   TextInput,
   Alert } from 'react-native';
 import { Undo2, Plus, Home, Users, User, Pencil, Trash2, Home as HomeIcon, Lock } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING } from '../theme/colors';
 import { useAppContext } from '../context/AppContext';
 import PremiumScreen from './PremiumScreen';
@@ -20,6 +21,7 @@ const { width } = Dimensions.get('window');
 
 const RoomsScreen = ({ navigation }) => {
   const { rooms, isPremium, addRoom, updateRoom, deleteRoom, theme } = useAppContext();
+  const { t } = useTranslation();
   const [premiumVisible, setPremiumVisible] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -30,11 +32,11 @@ const RoomsScreen = ({ navigation }) => {
   const handlePlusPress = () => {
     if (!isPremium && rooms.length >= 1) {
       Alert.alert(
-        "Límite alcanzado",
-        "Alcanzaste el límite de salas gratuitas. ¡Hazte Premium para crear salas ilimitadas!",
+        t('rooms.limit_reached'),
+        t('rooms.limit_reached_sub'),
         [
-          { text: "Cancelar", style: "cancel" },
-          { text: "Ver Premium", onPress: () => navigation.navigate('Premium') }
+          { text: t('common.cancel'), style: "cancel" },
+          { text: "Premium", onPress: () => navigation.navigate('Premium') }
         ]
       );
     } else {
@@ -73,11 +75,11 @@ const RoomsScreen = ({ navigation }) => {
 
   const handleDeletePress = (id) => {
     Alert.alert(
-      "Eliminar Sala",
-      "¿Estás seguro que quieres eliminar esta sala?",
+      t('rooms.delete_title'),
+      t('rooms.delete_confirm'),
       [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Eliminar", style: "destructive", onPress: () => deleteRoom(id) }
+        { text: t('common.cancel'), style: "cancel" },
+        { text: t('common.delete'), style: "destructive", onPress: () => deleteRoom(id) }
       ]
     );
   };
@@ -91,24 +93,25 @@ const RoomsScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#D9D9D9' }]}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={40} color={isDark ? '#FFF' : '#000'} />
+          <Undo2 size={40} color={isDark ? '#FFF' : '#1E234C'} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#000' }]}>Mis Salas</Text>
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>{t('rooms.title')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={[styles.content, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
+      <ScrollView style={styles.content}>
         {rooms.length === 0 ? (
           <View style={styles.emptyState}>
             <Users size={60} color={isDark ? '#333' : '#CCC'} style={{ marginBottom: 20 }} />
-            <Text style={[styles.emptyTitle, { color: isDark ? '#FFF' : '#333' }]}>No hay salas aún</Text>
-            <Text style={[styles.emptySubtitle, { color: isDark ? '#AAA' : '#666' }]}>Pulsa el botón (+) para crear tu primera sala y empezar a gestionar tus dispositivos.</Text>
+            <Text style={[styles.emptyTitle, { color: isDark ? '#FFF' : '#333' }]}>{t('rooms.no_rooms')}</Text>
+            <Text style={[styles.emptySubtitle, { color: isDark ? '#AAA' : '#666' }]}>{t('rooms.no_rooms_sub')}</Text>
           </View>
         ) : (
           rooms.map((room) => (
@@ -130,7 +133,7 @@ const RoomsScreen = ({ navigation }) => {
                   style={styles.verMasButton}
                   onPress={() => navigation.navigate('RoomDetails', { roomId: room.id, roomName: room.name })}
                 >
-                  <Text style={styles.verMasText}>Ver Mas</Text>
+                  <Text style={styles.verMasText}>{t('common.viewMore')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -139,6 +142,7 @@ const RoomsScreen = ({ navigation }) => {
 
         <View style={{ height: 100 }} />
       </ScrollView>
+      </View>
 
       {/* FAB */}
       <TouchableOpacity style={[styles.fab, { backgroundColor: isDark ? '#4FB3C3' : '#000' }]} onPress={handlePlusPress}>
@@ -149,15 +153,15 @@ const RoomsScreen = ({ navigation }) => {
       <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#B0B0B0' }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
           <Home size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Inicio</Text>
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} activeOpacity={1}>
           <Users size={32} color={isDark ? '#4FB3C3' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#4FB3C3' : '#000' }]}>Salas</Text>
+          <Text style={[styles.navText, { color: isDark ? '#4FB3C3' : '#000' }]}>{t('common.rooms')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
           <User size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Cuenta</Text>
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.account')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -165,12 +169,12 @@ const RoomsScreen = ({ navigation }) => {
       <Modal visible={createModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Nueva Sala</Text>
+            <Text style={styles.modalTitle}>{t('rooms.new_room')}</Text>
             <TextInput
               style={styles.modalInput}
               value={roomNameInput}
               onChangeText={setRoomNameInput}
-              placeholder="Nombre de la sala..."
+              placeholder={t('rooms.room_name_placeholder')}
               autoFocus
             />
             <View style={styles.modalButtons}>
@@ -178,13 +182,13 @@ const RoomsScreen = ({ navigation }) => {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setCreateModalVisible(false)}
               >
-                <Text style={styles.buttonText}>Cancelar</Text>
+                <Text style={styles.buttonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={handleCreateRoom}
               >
-                <Text style={[styles.buttonText, { color: '#FFF' }]}>Crear</Text>
+                <Text style={[styles.buttonText, { color: '#FFF' }]}>{t('common.create')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -195,12 +199,12 @@ const RoomsScreen = ({ navigation }) => {
       <Modal visible={editModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Editar Sala</Text>
+            <Text style={styles.modalTitle}>{t('rooms.edit_room')}</Text>
             <TextInput
               style={styles.modalInput}
               value={roomNameInput}
               onChangeText={setRoomNameInput}
-              placeholder="Nuevo nombre..."
+              placeholder={t('rooms.room_name_placeholder')}
               autoFocus
             />
             <View style={styles.modalButtons}>
@@ -208,13 +212,13 @@ const RoomsScreen = ({ navigation }) => {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setEditModalVisible(false)}
               >
-                <Text style={styles.buttonText}>Cancelar</Text>
+                <Text style={styles.buttonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={handleUpdateRoom}
               >
-                <Text style={[styles.buttonText, { color: '#FFF' }]}>Guardar</Text>
+                <Text style={[styles.buttonText, { color: '#FFF' }]}>{t('common.save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -229,27 +233,30 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
-    backgroundColor: '#FFF',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#D9D9D9',
+    paddingTop: 55,
+    paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#000',
   },
   backButton: {
     padding: 5,
   },
+  contentWrapper: {
+    flex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    overflow: 'hidden',
+  },
   content: {
     flex: 1,
-    backgroundColor: '#FFF',
   },
   emptyState: {
     flex: 1,
@@ -271,10 +278,16 @@ const styles = StyleSheet.create({
   roomCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#D9D9D9',
-    marginVertical: 1,
-    padding: 10,
+    marginHorizontal: 15,
+    marginVertical: 6,
+    padding: 12,
     height: 120,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
   },
   iconContainer: {
     width: 100,

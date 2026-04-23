@@ -60,16 +60,17 @@ const PremiumScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#F8F9FA' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
-      <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#000' }]}>Plan Premium</Text>
-        <TouchableOpacity onPress={handleClose} style={[styles.closeButton, { backgroundColor: isDark ? '#333' : '#EEE' }]}>
-          <X size={24} color={isDark ? '#FFF' : '#000'} />
+      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>Plan Premium</Text>
+        <TouchableOpacity onPress={handleClose} style={[styles.closeButton, { backgroundColor: isDark ? '#333' : 'rgba(255,255,255,0.3)' }]}>
+          <X size={24} color={isDark ? '#FFF' : '#1E234C'} />
         </TouchableOpacity>
       </View>
 
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {isPremium ? (
           <View style={styles.premiumSuccess}>
@@ -170,6 +171,7 @@ const PremiumScreen = ({ navigation }) => {
           </View>
         )}
       </ScrollView>
+      </View>
 
       {/* Bottom Nav Simulation */}
       {!showPayment && (
@@ -195,28 +197,37 @@ const PremiumScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingTop: 55,
+    paddingBottom: 20,
     paddingHorizontal: 20,
     position: 'relative',
     zIndex: 10,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   closeButton: {
     position: 'absolute',
     right: 20,
+    top: 55,
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  contentWrapper: {
+    flex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    overflow: 'hidden',
   },
   scrollContent: {
     paddingHorizontal: 25,

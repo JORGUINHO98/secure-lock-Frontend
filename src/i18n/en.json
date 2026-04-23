@@ -1,0 +1,88 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "home": "Home",
+    "rooms": "Rooms",
+    "account": "Account",
+    "settings": "Settings",
+    "language": "Language",
+    "save": "Save",
+    "cancel": "Cancel",
+    "success": "Success",
+    "error": "Error",
+    "edit": "Edit",
+    "delete": "Delete",
+    "create": "Create",
+    "viewMore": "View More",
+    "user": "User",
+    "retry": "Retry"
+  },
+  "auth": {
+    "title": "SECURE LOCK",
+    "subtitle": "smart parental control for devices",
+    "fullName": "Full Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "createAccount": "Create Account"
+  },
+  "home": {
+    "welcome_user": "Welcome: {{name}}",
+    "scan_qr": "Scan QR",
+    "scan_qr_sub": "Link this device to a room",
+    "control_devices": "Control Devices",
+    "hero_subtitle": "total remote device locking"
+  },
+  "rooms": {
+    "title": "My Rooms",
+    "no_rooms": "No rooms yet",
+    "no_rooms_sub": "Press the (+) button to create your first room and start managing your devices.",
+    "new_room": "New Room",
+    "edit_room": "Edit Room",
+    "room_name_placeholder": "Room name...",
+    "limit_reached": "Limit reached",
+    "limit_reached_sub": "You reached the limit of free rooms. Go Premium to create unlimited rooms!",
+    "delete_title": "Delete Room",
+    "delete_confirm": "Are you sure you want to delete this room?"
+  },
+  "account": {
+    "personal_data": "Personal Details",
+    "change_photo": "Change Photo",
+    "phone": "Phone",
+    "location": "Location",
+    "premium_plan": "Get Premium Plan",
+    "update_success": "Your details have been updated successfully."
+  },
+  "roomDetails": {
+    "block_all_title": "Block entire room",
+    "block_all_confirm": "Are you sure you want to block all devices in the room \"{{roomName}}\"?",
+    "block_all": "Block All",
+    "block_success": "All devices in this room have been blocked.",
+    "delete_device_title": "Delete Device",
+    "delete_device_confirm": "Are you sure you want to delete this device?",
+    "active": "Active",
+    "locked": "Locked",
+    "block_all_room": "Block Entire Room",
+    "show_qr": "Show Room QR",
+    "edit_device": "Edit Device",
+    "device_name_placeholder": "Device name..."
+  },
+  "lock": {
+    "device_free": "Device Free",
+    "waiting": "WAITING FOR ORDERS...",
+    "device_locked": "DEVICE LOCKED",
+    "protection_active": "PROTECTION ACTIVE"
+  },
+  "scanner": {
+    "loading_permissions": "Loading permissions...",
+    "permission_needed": "We need your permission to show the camera",
+    "grant_permission": "Grant permission",
+    "linked_title": "Linked",
+    "linked_success": "Device successfully linked to the room.",
+    "link_error": "Could not link the device. Please try again.",
+    "scan_instructions": "Scan the device's QR code"
+  }
+}

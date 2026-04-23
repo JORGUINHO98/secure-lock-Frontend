@@ -13,10 +13,10 @@ export const COLORS = {
     offWhite: '#F9F9F9',
   },
   border: '#E0E0E0',
-  error: '#FF3131', // Rojo eléctrico más llamativo
-  success: '#00E676', // Verde brillante moderno
-  green: '#00E676',
-  red: '#FF3131',
+  error: '#C0392B', // Rojo oscuro profesional para errores
+  success: '#0ABF7B', // Verde esmeralda sofisticado
+  green: '#0ABF7B',
+  red: '#1E3A5F',
   blue: '#4FB3C3',
 };
 

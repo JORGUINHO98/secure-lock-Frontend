@@ -9,16 +9,18 @@ import { Platform, View,
   Switch } from 'react-native';
 import { Undo2, Moon, BookOpen, Settings, Calendar, Home, Users, User } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
+import { COLORS } from '../theme/colors';
 
 const LockConfigScreen = ({ route, navigation }) => {
   const { roomId, deviceId } = route.params;
-  const { setDeviceSchedule } = useAppContext();
+  const { setDeviceSchedule, theme } = useAppContext();
+  const isDark = theme === 'dark';
 
   const schedules = [
-    { id: '1', title: 'Hora de dormir', time: '20h-7h', icon: <Moon size={32} color="#000" /> },
-    { id: '2', title: 'Estudio', time: '8h-12h', icon: <BookOpen size={32} color="#000" /> },
-    { id: '3', title: 'Tiempo particular', time: '20h-21h', icon: <Settings size={32} color="#000" /> },
-    { id: '4', title: 'Todos los Dias', time: 'Lu,Ma,Mi,Ju,Vi,Sa,Do', icon: <Calendar size={32} color="#000" /> },
+    { id: '1', title: 'Hora de dormir', time: '20h-7h', icon: <Moon size={32} color="#FFF" /> },
+    { id: '2', title: 'Estudio', time: '8h-12h', icon: <BookOpen size={32} color="#FFF" /> },
+    { id: '3', title: 'Tiempo particular', time: '20h-21h', icon: <Settings size={32} color="#FFF" /> },
+    { id: '4', title: 'Todos los Dias', time: 'Lu,Ma,Mi,Ju,Vi,Sa,Do', icon: <Calendar size={32} color="#FFF" /> },
   ];
 
   const handleSelectSchedule = (scheduleTitle) => {
@@ -27,62 +29,63 @@ const LockConfigScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={40} color="#000" />
+          <Undo2 size={40} color={isDark ? '#FFF' : '#1E234C'} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Configuracion de Bloqueo</Text>
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>Configuración de Bloqueo</Text>
       </View>
 
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
       <ScrollView style={styles.content}>
-        <Text style={styles.sectionTitle}>Horarios:</Text>
+        <Text style={[styles.sectionTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>Horarios:</Text>
 
         {schedules.map((item) => (
-          <View key={item.id} style={styles.scheduleCard}>
-            <View style={styles.iconBox}>
+          <View key={item.id} style={[styles.scheduleCard, { backgroundColor: isDark ? '#333' : '#FFF' }]}>
+            <View style={[styles.iconBox, { backgroundColor: isDark ? '#4FB3C3' : '#6C5CE7' }]}>
               {item.icon}
             </View>
             <View style={styles.scheduleInfo}>
-              <Text style={styles.scheduleTitle}>{item.title}</Text>
-              <Text style={styles.scheduleTime}>{item.time}</Text>
+              <Text style={[styles.scheduleTitle, { color: isDark ? '#FFF' : '#000' }]}>{item.title}</Text>
+              <Text style={[styles.scheduleTime, { color: isDark ? '#AAA' : '#666' }]}>{item.time}</Text>
             </View>
             <View style={styles.switchContainer}>
               <Switch 
                 value={false} 
                 onValueChange={() => handleSelectSchedule(item.title)}
-                trackColor={{ false: "#767577", true: "#000" }}
+                trackColor={{ false: "#767577", true: "#6C5CE7" }}
                 thumbColor={"#f4f3f4"}
               />
-              <Text style={styles.onText}>ON</Text>
             </View>
           </View>
         ))}
 
         <TouchableOpacity 
-          style={styles.manualButton} 
+          style={[styles.manualButton, { backgroundColor: isDark ? '#4FB3C3' : '#6C5CE7' }]} 
           onPress={() => navigation.navigate('ManualTime', { roomId, deviceId })}
         >
           <Text style={styles.manualButtonText}>Estimar Tiempo Manualmente</Text>
         </TouchableOpacity>
       </ScrollView>
+      </View>
 
       {/* Bottom Nav */}
-      <View style={styles.bottomNav}>
+      <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#B0B0B0' }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Home size={32} color="#000" />
-          <Text style={styles.navText}>Inicio</Text>
+          <Home size={32} color={isDark ? '#FFF' : '#000'} />
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Inicio</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
-          <Users size={32} color="#000" />
-          <Text style={styles.navText}>Salas</Text>
+          <Users size={32} color={isDark ? '#FFF' : '#000'} />
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Salas</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <User size={32} color="#000" />
-          <Text style={styles.navText}>Cuenta</Text>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
+          <User size={32} color={isDark ? '#FFF' : '#000'} />
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Cuenta</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -93,27 +96,27 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
-    backgroundColor: '#A0A0A0',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#D9D9D9',
+    paddingTop: 55,
+    paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#000',
     marginLeft: 15,
   },
   backButton: {
-    backgroundColor: '#FFF',
-    borderRadius: 15,
-    padding: 2,
-    borderWidth: 2,
-    borderColor: '#000',
+    padding: 5,
+  },
+  contentWrapper: {
+    flex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    overflow: 'hidden',
   },
   content: {
     flex: 1,
@@ -121,61 +124,55 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   sectionTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
     marginBottom: 20,
   },
   scheduleCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#D9D9D9',
     padding: 15,
-    marginBottom: 15,
-    borderRadius: 0,
+    marginBottom: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
   },
   iconBox: {
-    width: 60,
-    height: 60,
-    backgroundColor: '#4E5A8E',
+    width: 56,
+    height: 56,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 14,
   },
   scheduleInfo: {
     flex: 1,
     marginLeft: 15,
   },
   scheduleTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#000',
   },
   scheduleTime: {
-    fontSize: 18,
-    color: '#000',
+    fontSize: 14,
     marginTop: 4,
   },
   switchContainer: {
     alignItems: 'center',
   },
-  onText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#000',
-    marginTop: 2,
-  },
   manualButton: {
-    backgroundColor: '#4FB3C3',
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 10,
     marginBottom: 40,
+    borderRadius: 15,
   },
   manualButtonText: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#FFF',
     textAlign: 'center',
   },
   bottomNav: {

@@ -24,6 +24,7 @@ import {
   Settings,
   X
 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING } from '../theme/colors';
 import ActionCard from '../components/ActionCard';
 import { useAppContext } from '../context/AppContext';
@@ -32,6 +33,7 @@ const { width, height } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
   const { theme, toggleTheme, logout, user } = useAppContext();
+  const { t } = useTranslation();
   const [menuVisible, setMenuVisible] = useState(false);
   const isDark = theme === 'dark';
 
@@ -58,46 +60,42 @@ const HomeScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => setMenuVisible(true)}>
           <Menu size={32} color={isDark ? '#FFF' : '#1E234C'} />
         </TouchableOpacity>
-        <Text style={[styles.welcomeText, { color: isDark ? '#FFF' : '#000' }]}>Bienvenido: {user?.name || 'Admin'}</Text>
+        <Text style={[styles.welcomeText, { color: isDark ? '#FFF' : '#000' }]}>{t('home.welcome_user', { name: user?.name || 'Admin' })}</Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <LogOut size={28} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
       <ImageBackground
-        source={isDark ? null : require('../assets/images/background.png')}
+        source={isDark ? null : require('../../assets/background.png')}
         style={[styles.background, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}
         resizeMode="cover"
       >
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
           <View style={styles.content}>
-            {/* Theme Toggle Overlay */}
-            <TouchableOpacity style={[styles.themeToggle, { backgroundColor: isDark ? '#444' : 'rgba(255, 255, 255, 0.8)' }]} onPress={toggleTheme}>
-              <SunMoon size={32} color={isDark ? '#F1C40F' : '#1E234C'} />
-            </TouchableOpacity>
 
             {/* Logo and Title Section */}
             <View style={styles.heroSection}>
               <Image
-                source={require('../assets/images/logo.png')}
+                source={require('../../assets/logo.png')}
                 style={styles.logo}
                 resizeMode="contain"
               />
-              <Text style={[styles.title, { color: isDark ? '#4FB3C3' : '#1E234C' }]}>SECURE LOCK</Text>
-              <Text style={[styles.subtitle, { color: isDark ? '#BBB' : '#000' }]}>bloqueo total de dispositivos de forma remota</Text>
+              <Text style={[styles.title, { color: isDark ? '#4FB3C3' : '#1E234C' }]}>{t('auth.title')}</Text>
+              <Text style={[styles.subtitle, { color: isDark ? '#BBB' : '#000' }]}>{t('home.hero_subtitle')}</Text>
             </View>
 
             {/* Action Cards */}
             <View style={styles.actionContainer}>
               <ActionCard
-                title="Escanear QR"
-                subtitle="Vincular este dispositivo a una sala"
+                title={t('home.scan_qr')}
+                subtitle={t('home.scan_qr_sub')}
                 icon={Smartphone}
                 backgroundColor={COLORS.green}
                 onPress={() => navigation.navigate('CameraScanner')}
               />
               <ActionCard
-                title="Controlar Dispositivos"
+                title={t('home.control_devices')}
                 icon={Shield}
                 backgroundColor={COLORS.red}
                 onPress={() => navigation.navigate('Rooms')}
@@ -141,15 +139,15 @@ const HomeScreen = ({ navigation }) => {
       <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#C5C5C5' }]}>
         <TouchableOpacity style={styles.navItem}>
           <Home size={32} color={isDark ? '#4FB3C3' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#4FB3C3' : '#000' }]}>Inicio</Text>
+          <Text style={[styles.navText, { color: isDark ? '#4FB3C3' : '#000' }]}>{t('common.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
           <Users size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Salas</Text>
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.rooms')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
           <User size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Cuenta</Text>
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.account')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

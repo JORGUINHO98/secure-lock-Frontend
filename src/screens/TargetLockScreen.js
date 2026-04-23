@@ -9,8 +9,9 @@ import {
   Dimensions,
   ActivityIndicator
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { Shield, Lock, Smartphone, RefreshCw, Unlock } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { COLORS } from '../theme/colors';
 import socketService from '../services/socket';
@@ -19,6 +20,7 @@ const { width } = Dimensions.get('window');
 
 const TargetLockScreen = ({ navigation }) => {
   const { theme } = useAppContext();
+  const { t } = useTranslation();
   const [isLocked, setIsLocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [deviceId, setDeviceId] = useState(null);
@@ -26,8 +28,8 @@ const TargetLockScreen = ({ navigation }) => {
   useEffect(() => {
     const setupConnection = async () => {
       try {
-        const storedId = await AsyncStorage.getItem('device_unique_id');
-        const token = await AsyncStorage.getItem('userToken');
+        const storedId = await SecureStore.getItemAsync('device_unique_id');
+        const token = await SecureStore.getItemAsync('userToken');
         
         if (storedId) {
           setDeviceId(storedId);
@@ -73,9 +75,9 @@ const TargetLockScreen = ({ navigation }) => {
               </View>
             </View>
             <Text style={styles.brandTitle}>Secure Lock</Text>
-            <Text style={styles.statusText}>Dispositivo Libre</Text>
+            <Text style={styles.statusText}>{t('lock.device_free') || "Dispositivo Libre"}</Text>
             <View style={styles.remoteIndicator}>
-              <Text style={styles.remoteText}>ESPERANDO ÓRDENES...</Text>
+              <Text style={styles.remoteText}>{t('lock.waiting') || "ESPERANDO ÓRDENES..."}</Text>
             </View>
           </View>
         ) : (
@@ -86,9 +88,9 @@ const TargetLockScreen = ({ navigation }) => {
               </View>
             </View>
             <Text style={styles.brandTitle}>Secure Lock</Text>
-            <Text style={styles.statusText}>DISPOSITIVO BLOQUEADO</Text>
+            <Text style={styles.statusText}>{t('lock.device_locked') || "DISPOSITIVO BLOQUEADO"}</Text>
             <View style={[styles.remoteIndicator, { backgroundColor: COLORS.red }]}>
-              <Text style={styles.remoteText}>PROTECCIÓN ACTIVA</Text>
+              <Text style={styles.remoteText}>{t('lock.protection_active') || "PROTECCIÓN ACTIVA"}</Text>
             </View>
           </View>
         )}

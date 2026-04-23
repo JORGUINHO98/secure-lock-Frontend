@@ -8,19 +8,21 @@ import { Platform, View,
   ScrollView,
   Alert } from 'react-native';
 import { User, LogOut, CreditCard, ChevronRight, Home, Users, Settings } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 
 const AccountScreen = ({ navigation }) => {
   const { theme, user, logout } = useAppContext();
+  const { t } = useTranslation();
   const isDark = theme === 'dark';
 
   const handleLogout = () => {
     Alert.alert(
-      "Cerrar Sesión",
-      "¿Estás seguro que quieres salir?",
+      t('common.logout'),
+      t('rooms.delete_confirm'), // Reusing similar string or add new one
       [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Salir", style: "destructive", onPress: () => {
+        { text: t('common.cancel'), style: "cancel" },
+        { text: t('common.logout'), style: "destructive", onPress: () => {
           logout();
           navigation.navigate('Auth');
         }}
@@ -42,12 +44,14 @@ const AccountScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#D9D9D9' }]}>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#000' }]}>Mi Cuenta</Text>
+      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>{t('common.account')}</Text>
       </View>
+
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
 
       <ScrollView style={styles.content}>
         {/* User Info Card */}
@@ -56,49 +60,50 @@ const AccountScreen = ({ navigation }) => {
             <User size={50} color="#FFF" />
           </View>
           <View style={styles.userInfo}>
-            <Text style={[styles.userName, { color: isDark ? '#FFF' : '#000' }]}>{user?.name || 'Usuario'}</Text>
-            <Text style={styles.userEmail}>{user?.email || 'email@ejemplo.com'}</Text>
+            <Text style={[styles.userName, { color: isDark ? '#FFF' : '#000' }]}>{user?.name || t('common.user')}</Text>
+            <Text style={styles.userEmail}>{user?.email || 'email@example.com'}</Text>
           </View>
         </View>
 
         <View style={styles.menuSection}>
           <MenuItem 
             icon={<CreditCard size={24} color="#6C5CE7" />} 
-            title="Adquirir Plan Premium" 
+            title={t('account.premium_plan') || "Plan Premium"} 
             onPress={() => navigation.navigate('Premium')}
           />
           <MenuItem 
             icon={<User size={24} color="#6C5CE7" />} 
-            title="Datos de la Cuenta" 
+            title={t('account.personal_data')} 
             onPress={() => navigation.navigate('AccountDetails')}
           />
           <MenuItem 
             icon={<Settings size={24} color="#6C5CE7" />} 
-            title="Configuración" 
+            title={t('common.settings')} 
             onPress={() => navigation.navigate('Settings')}
           />
           <MenuItem 
             icon={<LogOut size={24} color="#FF4757" />} 
-            title="Cerrar Sesión" 
+            title={t('common.logout')} 
             onPress={handleLogout}
             showChevron={false}
           />
         </View>
       </ScrollView>
+      </View>
 
       {/* Bottom Nav */}
       <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#B0B0B0' }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
           <Home size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Inicio</Text>
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
           <Users size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Salas</Text>
+          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.rooms')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} activeOpacity={1}>
           <User size={32} color={isDark ? '#6C5CE7' : '#6C5CE7'} />
-          <Text style={[styles.navText, { color: '#6C5CE7' }]}>Cuenta</Text>
+          <Text style={[styles.navText, { color: '#6C5CE7' }]}>{t('common.account')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -113,11 +118,17 @@ const styles = StyleSheet.create({
   header: {
     paddingVertical: 20,
     alignItems: 'center',
-    elevation: 4,
+    paddingTop: 55,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
+  },
+  contentWrapper: {
+    flex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    overflow: 'hidden',
   },
   content: {
     flex: 1,

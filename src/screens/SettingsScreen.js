@@ -8,20 +8,70 @@ import {
   StatusBar,
   ScrollView,
   Switch,
-  Platform
+  Platform,
+  Modal,
+  Dimensions
 } from 'react-native';
-import { ChevronLeft, Moon, Bell, Globe, Shield, HelpCircle, Info } from 'lucide-react-native';
+import { ChevronLeft, Moon, Bell, Globe, Shield, HelpCircle, Info, Check, X } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
+import * as SecureStore from 'expo-secure-store';
 import { useAppContext } from '../context/AppContext';
+
+const { width, height } = Dimensions.get('window');
 
 const SettingsScreen = ({ navigation }) => {
   const { theme, toggleTheme } = useAppContext();
+  const { t, i18n } = useTranslation();
   const isDark = theme === 'dark';
 
   const [notifications, setNotifications] = useState(true);
   const [biometrics, setBiometrics] = useState(false);
+  const [langModalVisible, setLangModalVisible] = useState(false);
+
+  const changeLanguage = async (lang) => {
+    console.log('Solicitando cambio a:', lang);
+    
+    try {
+      if (i18n && typeof i18n.changeLanguage === 'function') {
+        await i18n.changeLanguage(lang);
+        console.log('Idioma cambiado exitosamente en i18next');
+      } else {
+        console.error('i18n.changeLanguage no es una función. i18n es:', typeof i18n);
+        // Fallback: intentar usar el i18n global si el del hook falla
+        const globalI18n = require('../i18n').default;
+        if (globalI18n && typeof globalI18n.changeLanguage === 'function') {
+          await globalI18n.changeLanguage(lang);
+          console.log('Idioma cambiado usando instancia global');
+        } else {
+          throw new Error('No se pudo encontrar la función changeLanguage');
+        }
+      }
+
+      try {
+        await SecureStore.setItemAsync('user-language', lang);
+        console.log('Idioma persistido en SecureStore');
+      } catch (storageErr) {
+        console.log('Error persistiendo idioma en SecureStore (continuando anyway):', storageErr.message);
+      }
+      
+      setLangModalVisible(false);
+    } catch (err) {
+      console.error('Error en el flujo de cambio de idioma:', err);
+      setLangModalVisible(false);
+    }
+  };
+
+  const getLanguageName = (lang) => {
+    switch (lang) {
+      case 'es': return 'Español';
+      case 'en': return 'English';
+      case 'pt': return 'Português';
+      default: return 'Español';
+    }
+  };
 
   const SettingItem = ({ icon: Icon, title, description, value, onValueChange, type = 'switch', onPress }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[styles.settingItem, { backgroundColor: isDark ? '#333' : '#F9F9F9' }]}
       onPress={onPress}
       disabled={type === 'switch'}
@@ -41,97 +91,153 @@ const SettingsScreen = ({ navigation }) => {
           thumbColor={Platform.OS === 'ios' ? '#FFF' : value ? '#FFF' : '#f4f3f4'}
         />
       ) : (
-        <Text style={styles.settingValue}>{value}</Text>
+        <View style={styles.valueContainer}>
+          <Text style={styles.settingValue}>{value}</Text>
+          <ChevronLeft size={16} color="#888" style={{ transform: [{ rotate: '180deg' }], marginLeft: 5 }} />
+        </View>
       )}
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      
-      <View style={styles.header}>
+
+      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeft size={28} color={isDark ? '#FFF' : '#000'} />
+          <ChevronLeft size={32} color={isDark ? '#FFF' : '#1E234C'} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#000' }]}>Configuración</Text>
-        <View style={{ width: 28 }} />
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>{t('common.settings')}</Text>
+        <View style={{ width: 32 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Preferencia de Visualización</Text>
-        <SettingItem 
-          icon={Moon} 
-          title="Modo Oscuro" 
-          description="Ajusta la apariencia de la aplicación"
-          value={isDark}
-          onValueChange={toggleTheme}
-        />
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Preferencia de Visualización</Text>
+          <SettingItem
+            icon={Moon}
+            title="Modo Oscuro"
+            description="Ajusta la apariencia de la aplicación"
+            value={isDark}
+            onValueChange={toggleTheme}
+          />
 
-        <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Notificaciones</Text>
-        <SettingItem 
-          icon={Bell} 
-          title="Notificaciones Push" 
-          description="Recibe alertas de seguridad y estado"
-          value={notifications}
-          onValueChange={setNotifications}
-        />
+          <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Notificaciones</Text>
+          <SettingItem
+            icon={Bell}
+            title="Notificaciones Push"
+            description="Recibe alertas de seguridad y estado"
+            value={notifications}
+            onValueChange={setNotifications}
+          />
 
-        <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Seguridad</Text>
-        <SettingItem 
-          icon={Shield} 
-          title="Autenticación Biométrica" 
-          description="Huella dactilar o FaceID"
-          value={biometrics}
-          onValueChange={setBiometrics}
-        />
+          <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Seguridad</Text>
+          <SettingItem
+            icon={Shield}
+            title="Autenticación Biométrica"
+            description="Huella dactilar o FaceID"
+            value={biometrics}
+            onValueChange={setBiometrics}
+          />
 
-        <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Aplicación</Text>
-        <SettingItem 
-          icon={Globe} 
-          title="Idioma" 
-          value="Español"
-          type="text"
-          onPress={() => {}}
-        />
-        <SettingItem 
-          icon={HelpCircle} 
-          title="Centro de Ayuda" 
-          type="text"
-          onPress={() => {}}
-        />
-        <SettingItem 
-          icon={Info} 
-          title="Versión de la App" 
-          value="1.0.4 (2024)"
-          type="text"
-          onPress={() => {}}
-        />
-      </ScrollView>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Aplicación</Text>
+          <SettingItem
+            icon={Globe}
+            title={t('common.language') || "Idioma"}
+            value={getLanguageName(i18n.language)}
+            type="text"
+            onPress={() => setLangModalVisible(true)}
+          />
+          <SettingItem
+            icon={HelpCircle}
+            title="Centro de Ayuda"
+            type="text"
+            onPress={() => { }}
+          />
+          <SettingItem
+            icon={Info}
+            title="Versión de la App"
+            value="1.0.4 (2026)"
+            type="text"
+            onPress={() => { }}
+          />
+        </ScrollView>
+      </View>
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={langModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setLangModalVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setLangModalVisible(false)}
+        >
+          <View 
+            style={[styles.modalContent, { backgroundColor: isDark ? '#2D2D2D' : '#FFF' }]}
+            onStartShouldSetResponder={() => true}
+            onResponderTerminationRequest={() => false}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: isDark ? '#FFF' : '#000' }]}>Seleccionar Idioma</Text>
+              <TouchableOpacity onPress={() => setLangModalVisible(false)}>
+                <X size={24} color={isDark ? '#FFF' : '#000'} />
+              </TouchableOpacity>
+            </View>
+            
+            {['es', 'en', 'pt'].map((lang) => (
+              <TouchableOpacity 
+                key={lang} 
+                style={styles.langOption} 
+                onPress={() => changeLanguage(lang)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 50, right: 50 }}
+              >
+                <Text style={[styles.langText, { color: isDark ? '#FFF' : '#000' }]}>{getLanguageName(lang)}</Text>
+                {i18n.language && i18n.language.startsWith(lang) && <Check size={20} color="#6C5CE7" />}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
 
+// Screen components
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingTop: 55,
+    paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   backButton: {
     padding: 5,
   },
+  contentWrapper: {
+    flex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    overflow: 'hidden',
+  },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 25,
+    paddingTop: 10,
     paddingBottom: 40,
   },
   sectionTitle: {
@@ -139,41 +245,83 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textTransform: 'uppercase',
     marginTop: 25,
-    marginBottom: 10,
+    marginBottom: 12,
     marginLeft: 5,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 10,
+    padding: 18,
+    borderRadius: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
   },
   settingIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   settingTextContainer: {
     flex: 1,
-    marginLeft: 10,
+    marginLeft: 15,
   },
   settingTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
   },
   settingDescription: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#888',
-    marginTop: 2,
+    marginTop: 3,
+  },
+  valueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   settingValue: {
-    fontSize: 14,
-    color: '#888',
-    fontWeight: '500',
+    fontSize: 15,
+    color: '#6C5CE7',
+    fontWeight: '600',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 25,
+    paddingBottom: 50,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  langOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  langText: {
+    fontSize: 18,
+    fontWeight: '500',
+  }
 });
 
 export default SettingsScreen;
