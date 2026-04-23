@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
+import { Platform, View,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -11,8 +10,7 @@ import {
   Dimensions,
   Modal,
   TextInput,
-  Alert
-} from 'react-native';
+  Alert } from 'react-native';
 import { Undo2, Plus, Home, Users, User, Pencil, Trash2, Home as HomeIcon, Lock } from 'lucide-react-native';
 import { COLORS, SPACING } from '../theme/colors';
 import { useAppContext } from '../context/AppContext';
@@ -21,18 +19,24 @@ import PremiumScreen from './PremiumScreen';
 const { width } = Dimensions.get('window');
 
 const RoomsScreen = ({ navigation }) => {
-  const { rooms, isPremium, addRoom, updateRoom, deleteRoom, blockAllRooms, theme } = useAppContext();
+  const { rooms, isPremium, addRoom, updateRoom, deleteRoom, theme } = useAppContext();
   const [premiumVisible, setPremiumVisible] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [blockModalVisible, setBlockModalVisible] = useState(false);
   const [currentRoom, setCurrentRoom] = useState(null);
   const [roomNameInput, setRoomNameInput] = useState('');
   const isDark = theme === 'dark';
 
   const handlePlusPress = () => {
-    if (!isPremium && rooms.length >= 2) {
-      setPremiumVisible(true);
+    if (!isPremium && rooms.length >= 1) {
+      Alert.alert(
+        "Límite alcanzado",
+        "Alcanzaste el límite de salas gratuitas. ¡Hazte Premium para crear salas ilimitadas!",
+        [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Ver Premium", onPress: () => navigation.navigate('Premium') }
+        ]
+      );
     } else {
       setCurrentRoom(null);
       setRoomNameInput('');
@@ -48,7 +52,7 @@ const RoomsScreen = ({ navigation }) => {
         setCreateModalVisible(false);
       } else {
         setCreateModalVisible(false);
-        setPremiumVisible(true);
+        navigation.navigate('Premium');
       }
     }
   };
@@ -78,30 +82,6 @@ const RoomsScreen = ({ navigation }) => {
     );
   };
 
-  const handleBlockAllPress = () => {
-    setBlockModalVisible(true);
-  };
-
-  const handleConfirmFirstModal = () => {
-    setBlockModalVisible(false);
-    // Show second confirmation step
-    Alert.alert(
-      "Confirmación Final",
-      "Se bloqueará toda la sala. Todos los dispositivos dentro de las salas que contenga serán bloqueados.",
-      [
-        { text: "Cancelar", style: "cancel" },
-        { 
-          text: "Bloquear", 
-          style: "destructive", 
-          onPress: () => {
-            blockAllRooms();
-            Alert.alert("Éxito", "Salas bloqueadas correctamente.");
-          } 
-        }
-      ]
-    );
-  };
-
   const getRoomIcon = (type) => {
     return (
       <View style={[styles.iconContainer, { backgroundColor: isDark ? '#4FB3C3' : '#6C5CE7' }]}>
@@ -126,7 +106,9 @@ const RoomsScreen = ({ navigation }) => {
       <ScrollView style={[styles.content, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
         {rooms.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={[styles.emptyText, { color: isDark ? '#AAA' : '#666' }]}>No hay salas creadas. Pulsa (+) para crear una.</Text>
+            <Users size={60} color={isDark ? '#333' : '#CCC'} style={{ marginBottom: 20 }} />
+            <Text style={[styles.emptyTitle, { color: isDark ? '#FFF' : '#333' }]}>No hay salas aún</Text>
+            <Text style={[styles.emptySubtitle, { color: isDark ? '#AAA' : '#666' }]}>Pulsa el botón (+) para crear tu primera sala y empezar a gestionar tus dispositivos.</Text>
           </View>
         ) : (
           rooms.map((room) => (
@@ -137,10 +119,10 @@ const RoomsScreen = ({ navigation }) => {
                   <Text style={[styles.roomName, { color: isDark ? '#FFF' : '#000' }]}>{room.name}</Text>
                   <View style={styles.actionButtons}>
                     <TouchableOpacity onPress={() => handleEditPress(room)} style={styles.actionBtn}>
-                      <Pencil size={20} color="#6699CC" />
+                      <Pencil size={20} color={COLORS.blue} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleDeletePress(room.id)} style={styles.actionBtn}>
-                      <Trash2 size={20} color="#FF4757" />
+                      <Trash2 size={20} color={COLORS.red} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -155,24 +137,12 @@ const RoomsScreen = ({ navigation }) => {
           ))
         )}
 
-        <View style={[styles.emptySpace, { backgroundColor: isDark ? '#1A1A1A' : '#A0A0A0' }]} />
+        <View style={{ height: 100 }} />
       </ScrollView>
-
-      {/* Block All Button */}
-      {rooms.length > 0 && (
-        <TouchableOpacity
-          style={styles.blockAllButton}
-          onPress={() => {
-            setBlockModalVisible(true);
-          }}
-        >
-          <Text style={styles.blockAllText}>Bloqueaar toda la sala</Text>
-        </TouchableOpacity>
-      )}
 
       {/* FAB */}
       <TouchableOpacity style={[styles.fab, { backgroundColor: isDark ? '#4FB3C3' : '#000' }]} onPress={handlePlusPress}>
-        <Plus size={80} color="#FFF" strokeWidth={1.5} />
+        <Plus size={32} color="#FFF" strokeWidth={2.5} />
       </TouchableOpacity>
 
       {/* Bottom Nav */}
@@ -190,31 +160,6 @@ const RoomsScreen = ({ navigation }) => {
           <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Cuenta</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Confirmation Modal for Blocking */}
-      <Modal visible={blockModalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              ¿Estas seguro que quieres Bloquear todala Sala?
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setBlockModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.confirmButton]}
-                onPress={handleConfirmFirstModal}
-              >
-                <Text style={[styles.buttonText, { color: '#FFF' }]}>Aceptar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
 
       {/* Create Modal */}
       <Modal visible={createModalVisible} transparent animationType="fade">
@@ -276,16 +221,13 @@ const RoomsScreen = ({ navigation }) => {
         </View>
       </Modal>
 
-      <PremiumScreen
-        visible={premiumVisible}
-        onClose={() => setPremiumVisible(false)}
-      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
     backgroundColor: '#FFF',
   },
@@ -310,13 +252,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   emptyState: {
-    padding: 40,
+    flex: 1,
+    padding: 60,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 50,
   },
-  emptyText: {
-    fontSize: 20,
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  emptySubtitle: {
+    fontSize: 16,
     textAlign: 'center',
-    color: '#666',
+    lineHeight: 22,
   },
   roomCard: {
     flexDirection: 'row',
@@ -358,25 +308,6 @@ const styles = StyleSheet.create({
     padding: 5,
     marginLeft: 10,
   },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  blockBtn: {
-    flexDirection: 'row',
-    backgroundColor: '#FF1E1E',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-    alignItems: 'center',
-  },
-  blockBtnText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginLeft: 5,
-  },
   verMasButton: {
     alignSelf: 'flex-end',
   },
@@ -385,33 +316,17 @@ const styles = StyleSheet.create({
     color: '#6699CC',
     fontWeight: '600',
   },
-  blockAllButton: {
-    position: 'absolute',
-    bottom: 100,
-    left: 20,
-    right: 140, // Space for the FAB
-    height: 60,
-    backgroundColor: '#FF1E1E',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 0,
-  },
-  blockAllText: {
-    color: '#000',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
   emptySpace: {
-    height: 400,
+    height: 200,
     backgroundColor: '#A0A0A0',
   },
   fab: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 115,
     right: 20,
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',

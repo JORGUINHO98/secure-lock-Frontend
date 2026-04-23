@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
+import { Platform, View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
@@ -11,17 +10,17 @@ import {
   Dimensions,
   Modal,
   TextInput,
-  Alert
-} from 'react-native';
-import { Undo2, QrCode, Smartphone, Tablet, CheckCircle2, XCircle, Home, Users, User, Pencil, Trash2 } from 'lucide-react-native';
+  Alert } from 'react-native';
+import { Undo2, QrCode, Smartphone, Tablet, CheckCircle2, XCircle, Home, Users, User, Pencil, Trash2, Lock } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
+import { COLORS } from '../theme/colors';
 import PremiumScreen from './PremiumScreen';
 
 const { width } = Dimensions.get('window');
 
 const RoomDetailsScreen = ({ route, navigation }) => {
   const { roomId, roomName, scanResult } = route.params;
-  const { roomDevices, toggleDeviceStatus, addDeviceToRoom, updateDevice, deleteDevice, theme } = useAppContext();
+  const { roomDevices, addDeviceToRoom, updateDevice, deleteDevice, blockAllDevicesInRoom, theme } = useAppContext();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [premiumVisible, setPremiumVisible] = useState(false);
   const [currentDevice, setCurrentDevice] = useState(null);
@@ -32,15 +31,29 @@ const RoomDetailsScreen = ({ route, navigation }) => {
     if (scanResult) {
       const success = addDeviceToRoom(roomId, `Dispositivo ${scanResult.substring(0, 8)}`);
       if (!success) {
-        setPremiumVisible(true);
+        navigation.navigate('Premium');
       }
     }
   }, [scanResult]);
 
   const devices = roomDevices[roomId] || [];
 
-  const handleScanQR = () => {
-    navigation.navigate('CameraScanner', { roomId });
+  const handleBlockAllRoom = () => {
+    Alert.alert(
+      "Bloquear toda la sala",
+      `¿Estás seguro que quieres bloquear todos los dispositivos de la sala "${roomName}"?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Bloquear Todo", 
+          style: "destructive", 
+          onPress: () => {
+            blockAllDevicesInRoom(roomId);
+            Alert.alert("Éxito", "Todos los dispositivos de esta sala han sido bloqueados.");
+          }
+        }
+      ]
+    );
   };
 
   const handleEditDevice = (device) => {
@@ -106,13 +119,13 @@ const RoomDetailsScreen = ({ route, navigation }) => {
               <View style={styles.statusRow}>
                 {device.status === 'Activo' || device.status === 'Desbloqueado' ? (
                     <View style={styles.statusBadge}>
-                        <CheckCircle2 size={24} color="#00C9A7" />
-                        <Text style={[styles.statusText, { color: '#00C9A7' }]}>Activo</Text>
+                        <CheckCircle2 size={24} color={COLORS.green} />
+                        <Text style={[styles.statusText, { color: COLORS.green }]}>Activo</Text>
                     </View>
                 ) : (
                     <View style={styles.statusBadge}>
-                        <XCircle size={24} color="#FF4757" />
-                        <Text style={[styles.statusText, { color: '#FF4757' }]}>Bloqueado</Text>
+                        <XCircle size={24} color={COLORS.red} />
+                        <Text style={[styles.statusText, { color: COLORS.red }]}>Bloqueado</Text>
                     </View>
                 )}
                 <TouchableOpacity onPress={() => navigation.navigate('DeviceControl', { roomId, deviceId: device.id, roomName })}>
@@ -122,13 +135,25 @@ const RoomDetailsScreen = ({ route, navigation }) => {
             </View>
           </View>
         ))}
-        <View style={[styles.emptySpace, { backgroundColor: isDark ? '#1A1A1A' : '#A0A0A0' }]} />
+        <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* QR Scanner Button */}
-      <TouchableOpacity style={[styles.qrButton, { backgroundColor: isDark ? '#4FB3C3' : '#4FB3C3' }]} onPress={handleScanQR}>
-        <QrCode size={50} color="#FFF" />
-      </TouchableOpacity>
+      {/* Action Buttons */}
+      <View style={{ paddingHorizontal: 20, paddingBottom: 10, backgroundColor: isDark ? '#1A1A1A' : '#FFF' }}>
+          {/* Block All Button */}
+          {devices.length > 0 && (
+            <TouchableOpacity style={styles.blockAllButton} onPress={handleBlockAllRoom}>
+              <Lock size={24} color="#FFF" />
+              <Text style={styles.blockAllButtonText}>Bloquear Sala Completa</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Show QR Button */}
+          <TouchableOpacity style={[styles.showQrButton, { backgroundColor: isDark ? '#4FB3C3' : '#4FB3C3' }]} onPress={() => navigation.navigate('QRCode', { roomId, roomName })}>
+            <QrCode size={24} color="#FFF" />
+            <Text style={styles.showQrButtonText}>Mostrar QR de la Sala</Text>
+          </TouchableOpacity>
+      </View>
 
       {/* Edit Modal */}
       <Modal visible={editModalVisible} transparent animationType="fade">
@@ -161,10 +186,6 @@ const RoomDetailsScreen = ({ route, navigation }) => {
         </View>
       </Modal>
 
-      {/* Premium Modal */}
-      <Modal visible={premiumVisible} animationType="slide">
-        <PremiumScreen onClose={() => setPremiumVisible(false)} />
-      </Modal>
 
       {/* Bottom Navigation */}
       <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#B0B0B0' }]}>
@@ -187,6 +208,7 @@ const RoomDetailsScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
     backgroundColor: '#FFF',
   },
@@ -267,17 +289,35 @@ const styles = StyleSheet.create({
     height: 300,
     backgroundColor: '#A0A0A0',
   },
-  qrButton: {
-    position: 'absolute',
-    bottom: 150,
-    right: 20,
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#4FB3C3',
+  blockAllButton: {
+    backgroundColor: COLORS.red,
+    padding: 15,
+    borderRadius: 10,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
+    marginBottom: 10,
+    elevation: 4,
+  },
+  blockAllButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  showQrButton: {
+    padding: 15,
+    borderRadius: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+  },
+  showQrButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 10,
   },
   bottomNav: {
     flexDirection: 'row',

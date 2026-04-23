@@ -12,6 +12,9 @@ import LockConfigScreen from '../screens/LockConfigScreen';
 import ManualTimeScreen from '../screens/ManualTimeScreen';
 import TargetLockScreen from '../screens/TargetLockScreen';
 import AccountScreen from '../screens/AccountScreen';
+import AccountDetailsScreen from '../screens/AccountDetailsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import PremiumScreen from '../screens/PremiumScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,6 +38,9 @@ const AppNavigator = () => {
         <Stack.Screen name="ManualTime" component={ManualTimeScreen} />
         <Stack.Screen name="TargetLock" component={TargetLockScreen} />
         <Stack.Screen name="Account" component={AccountScreen} />
+        <Stack.Screen name="AccountDetails" component={AccountDetailsScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="Premium" component={PremiumScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

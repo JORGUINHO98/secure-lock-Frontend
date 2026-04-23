@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import api from '../services/api';
 
 const AppContext = createContext();
 
@@ -7,16 +8,34 @@ export const AppProvider = ({ children }) => {
   const [isPremium, setIsPremium] = useState(false);
   const [roomDevices, setRoomDevices] = useState({}); // { roomId: [devices] }
   const [theme, setTheme] = useState('light'); // 'light' or 'dark'
-  const [user, setUser] = useState({ name: 'Usuario Demo', email: 'usuario@ejemplo.com' });
+  const [user, setUser] = useState(null);
+
+  // Función para verificar el estado premium desde el backend
+  const checkPremiumStatus = async () => {
+    if (!user) return; // No verificar si no hay usuario
+    
+    try {
+      const response = await api.get('/suscripciones/premium-status/');
+      setIsPremium(response.data.has_active_premium);
+    } catch (error) {
+      // Usamos console.log en lugar de console.error para que no interrumpa con el cartel rojo en desarrollo
+      console.log('Verificación premium fallida (posiblemente offline o endpoint inexistente)');
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      checkPremiumStatus();
+    }
+  }, [user]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
   const logout = () => {
-    // Logic for logout (clearing tokens, etc.)
     setUser(null);
-    alert('Sesión cerrada');
+    setIsPremium(false);
   };
 
   const addRoom = (name) => {
@@ -75,6 +94,19 @@ export const AppProvider = ({ children }) => {
     setRoomDevices({ ...roomDevices, [roomId]: updatedDevices });
   };
 
+  const blockAllDevicesInRoom = (roomId) => {
+    if (roomDevices[roomId]) {
+      const updatedDevices = roomDevices[roomId].map(device => ({
+        ...device,
+        status: 'Bloqueado'
+      }));
+      setRoomDevices({
+        ...roomDevices,
+        [roomId]: updatedDevices
+      });
+    }
+  };
+
   const setDeviceSchedule = (roomId, deviceId, schedule) => {
     const updatedDevices = roomDevices[roomId].map(device =>
       device.id === deviceId ? { ...device, estimatedTime: schedule } : device
@@ -114,12 +146,14 @@ export const AppProvider = ({ children }) => {
       rooms,
       isPremium,
       setIsPremium,
+      checkPremiumStatus,
       addRoom,
       updateRoom,
       deleteRoom,
       roomDevices,
       addDeviceToRoom,
       updateDevice,
+      blockAllDevicesInRoom,
       deleteDevice,
       setDeviceSchedule,
       toggleDeviceStatus,
@@ -128,6 +162,7 @@ export const AppProvider = ({ children }) => {
       theme,
       toggleTheme,
       user,
+      setUser,
       logout
     }}>
       {children}

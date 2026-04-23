@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  View, 
+import { Platform, View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
   SafeAreaView, 
   StatusBar,
   ScrollView,
-  Dimensions
-} from 'react-native';
+  Dimensions } from 'react-native';
 import { Undo2, Home, Users, User } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
 
@@ -117,6 +115,7 @@ const ManualTimeScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
     backgroundColor: '#A0A0A0',
   },

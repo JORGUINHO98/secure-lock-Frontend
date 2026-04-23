@@ -15,10 +15,12 @@ import { BlurView } from 'expo-blur';
 import { User, Mail, Lock, ShieldCheck } from 'lucide-react-native';
 import { COLORS, SPACING } from '../theme/colors';
 import CustomInput from '../components/CustomInput';
+import { useAppContext } from '../context/AppContext';
 
 const { width } = Dimensions.get('window');
 
 const AuthScreen = ({ navigation }) => {
+  const { setUser } = useAppContext();
   const [activeTab, setActiveTab] = useState('register'); // Default to 'register' to match the image
   const [form, setForm] = useState({
     fullName: '',
@@ -33,11 +35,18 @@ const AuthScreen = ({ navigation }) => {
 
   const handleSubmit = () => {
     if (activeTab === 'login') {
-      console.log('Login with:', form.email, form.password);
+      // Simular login
+      setUser({
+        name: form.fullName || form.email.split('@')[0], // Fallback al nombre de usuario del email
+        email: form.email
+      });
     } else {
-      console.log('Register with:', form);
+      // Simular registro
+      setUser({
+        name: form.fullName,
+        email: form.email
+      });
     }
-    // Navigate to Home for demo
     navigation.navigate('Home');
   };
 

@@ -1,14 +1,12 @@
 import React from 'react';
-import { 
-  View, 
+import { Platform, View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
   SafeAreaView, 
   StatusBar,
   ScrollView,
-  Alert
-} from 'react-native';
+  Alert } from 'react-native';
 import { User, LogOut, CreditCard, ChevronRight, Home, Users, Settings } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
 
@@ -22,7 +20,10 @@ const AccountScreen = ({ navigation }) => {
       "¿Estás seguro que quieres salir?",
       [
         { text: "Cancelar", style: "cancel" },
-        { text: "Salir", style: "destructive", onPress: () => logout() }
+        { text: "Salir", style: "destructive", onPress: () => {
+          logout();
+          navigation.navigate('Auth');
+        }}
       ]
     );
   };
@@ -64,17 +65,17 @@ const AccountScreen = ({ navigation }) => {
           <MenuItem 
             icon={<CreditCard size={24} color="#6C5CE7" />} 
             title="Adquirir Plan Premium" 
-            onPress={() => Alert.alert("Premium", "Redirigiendo a suscripción...")}
+            onPress={() => navigation.navigate('Premium')}
           />
           <MenuItem 
             icon={<User size={24} color="#6C5CE7" />} 
             title="Datos de la Cuenta" 
-            onPress={() => {}}
+            onPress={() => navigation.navigate('AccountDetails')}
           />
           <MenuItem 
             icon={<Settings size={24} color="#6C5CE7" />} 
             title="Configuración" 
-            onPress={() => {}}
+            onPress={() => navigation.navigate('Settings')}
           />
           <MenuItem 
             icon={<LogOut size={24} color="#FF4757" />} 
@@ -106,6 +107,7 @@ const AccountScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
   },
   header: {

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  View, 
+import { Platform, View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
@@ -10,10 +9,11 @@ import {
   Image,
   Modal,
   Alert,
-  ScrollView
-} from 'react-native';
-import { Undo2, ShieldCheck, Lock, Unlock, Home, Users, User, Clock, Star } from 'lucide-react-native';
+  ActivityIndicator,
+  ScrollView } from 'react-native';
+import { Undo2, Shield, Settings, Clock, Smartphone, CheckCircle2, XCircle, Home, Users, User, Lock, Unlock } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
+import { COLORS } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -21,101 +21,120 @@ const DeviceControlScreen = ({ route, navigation }) => {
   const { roomId, deviceId, roomName: paramRoomName } = route.params;
   const { roomDevices, toggleDeviceStatus, theme, rooms } = useAppContext();
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-  const isDark = theme === 'dark';
+  const [isLoading, setIsLoading] = useState(false);
 
+  const isDark = theme === 'dark';
+  
+  // Find the room name if not provided
   const room = rooms.find(r => r.id === roomId);
-  const roomName = paramRoomName || room?.name || 'Desconocida';
+  const roomName = paramRoomName || (room ? room.name : 'Sala');
+
+  // Find the device
   const device = roomDevices[roomId]?.find(d => d.id === deviceId);
 
-  if (!device) return null;
+  if (!device) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text>Dispositivo no encontrado</Text>
+      </SafeAreaView>
+    );
+  }
 
-  const isBlocked = device.status === 'Bloqueado';
-
-  const handleToggle = () => {
-    toggleDeviceStatus(roomId, deviceId);
+  const handleBlockPress = () => {
+    if (device.status === 'Bloqueado') return;
+    setConfirmModalVisible(true);
   };
 
-  const handleConfirmBlock = () => {
-    handleToggle();
+  const handleConfirmBlock = async () => {
     setConfirmModalVisible(false);
-    Alert.alert("Éxito", "Se bloqueó el dispositivo correctamente.");
+    setIsLoading(true);
+    try {
+        await toggleDeviceStatus(roomId, deviceId, 'Bloqueado');
+    } catch (error) {
+        Alert.alert("Error", "No se pudo bloquear el dispositivo");
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  const handleUnlockPress = async () => {
+    if (device.status === 'Activo' || device.status === 'Desbloqueado') return;
+    setIsLoading(true);
+    try {
+        await toggleDeviceStatus(roomId, deviceId, 'Activo');
+    } catch (error) {
+        Alert.alert("Error", "No se pudo desbloquear el dispositivo");
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A0A0A0' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
       {/* Header */}
       <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#D9D9D9' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={50} color={isDark ? '#FFF' : '#000'} />
+          <Undo2 size={40} color={isDark ? '#FFF' : '#000'} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#000' }]}>{device.name}</Text>
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#000' }]}>{roomName}</Text>
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }}>
-        <View style={styles.content}>
-            {/* Shield Icon / Image Placeholder */}
-            <View style={[styles.shieldContainer, { backgroundColor: isDark ? '#333' : '#2D3436' }]}>
-            <View style={styles.shieldOuter}>
-                <ShieldCheck size={120} color={isDark ? '#4FB3C3' : '#4FB3C3'} strokeWidth={1} />
-            </View>
-            </View>
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Shield Icon */}
+        <View style={[styles.shieldContainer, { backgroundColor: isDark ? '#333' : '#2D3436' }]}>
+            <Shield size={100} color={device.status === 'Bloqueado' ? COLORS.red : COLORS.green} />
+        </View>
 
-            {/* Status */}
-            <View style={styles.statusSection}>
-                <View style={styles.statusLabelRow}>
-                    <Star size={20} color="#6C5CE7" fill="#6C5CE7" />
-                    <Text style={[styles.statusLabel, { color: isDark ? '#FFF' : '#000' }]}>Estado</Text>
+        {/* Status Section */}
+        <View style={styles.statusSection}>
+            <View style={styles.statusLabelRow}>
+                {device.status === 'Bloqueado' ? <Lock size={24} color={COLORS.red} /> : <Unlock size={24} color={COLORS.green} />}
+                <Text style={[styles.statusLabel, { color: isDark ? '#FFF' : '#000' }]}>Estado del Dispositivo:</Text>
+            </View>
+            <Text style={[styles.statusValue, { color: device.status === 'Bloqueado' ? COLORS.red : COLORS.green }]}>
+                {device.status === 'Bloqueado' ? 'BLOQUEADO' : 'ACTIVO'}
+            </Text>
+        </View>
+
+        {/* Control Section */}
+        <View style={styles.configSection}>
+            <Text style={[styles.configTitle, { color: isDark ? '#FFF' : '#000' }]}>Controles:</Text>
+            
+            <TouchableOpacity 
+                style={[styles.actionButton, styles.blockButton, device.status === 'Bloqueado' && styles.disabledButton]}
+                onPress={handleBlockPress}
+                disabled={isLoading || device.status === 'Bloqueado'}
+            >
+                <Lock size={32} color="#FFF" />
+                <Text style={styles.actionButtonText}>BLOQUEAR</Text>
+                {isLoading && device.status === 'Activo' && <ActivityIndicator color="#FFF" style={{marginLeft: 10}} />}
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+                style={[styles.actionButton, styles.unblockButton, (device.status === 'Activo' || device.status === 'Desbloqueado') && styles.disabledButton]}
+                onPress={handleUnlockPress}
+                disabled={isLoading || device.status === 'Activo' || device.status === 'Desbloqueado'}
+            >
+                <Unlock size={32} color="#FFF" />
+                <Text style={styles.actionButtonText}>DESBLOQUEAR</Text>
+                {isLoading && device.status === 'Bloqueado' && <ActivityIndicator color="#FFF" style={{marginLeft: 10}} />}
+            </TouchableOpacity>
+        </View>
+
+        {/* Info Section */}
+        <View style={styles.configSection}>
+            <Text style={[styles.configTitle, { color: isDark ? '#FFF' : '#000' }]}>Información:</Text>
+            <View style={styles.infoRow}>
+                <View style={[styles.infoCard, { backgroundColor: isDark ? '#333' : '#D9D9D9' }]}>
+                    <Smartphone size={32} color={isDark ? '#FFF' : '#000'} />
+                    <Text style={[styles.infoCardLabel, { color: isDark ? '#BBB' : '#444' }]}>Modelo</Text>
+                    <Text style={[styles.infoCardText, { color: isDark ? '#FFF' : '#000' }]}>{device.name}</Text>
                 </View>
-                <Text style={[styles.statusValue, { color: isDark ? '#4FB3C3' : '#000' }]}>{isBlocked ? 'Bloqueado' : 'Desbloqueado'}</Text>
-            </View>
-
-            {/* Config Section */}
-            <View style={styles.configSection}>
-                <TouchableOpacity onPress={() => navigation.navigate('LockConfig', { roomId, deviceId })}>
-                    <Text style={[styles.configTitle, { color: isDark ? '#FFF' : '#000' }]}>Conf. de Bloqueo</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                    style={[
-                        styles.actionButton, 
-                        styles.blockButton,
-                        (!device.estimatedTime || isBlocked) && styles.disabledButton
-                    ]} 
-                    onPress={() => !isBlocked && device.estimatedTime && setConfirmModalVisible(true)}
-                    activeOpacity={0.7}
-                    disabled={!device.estimatedTime || isBlocked}
-                >
-                    <Lock size={30} color="#000" />
-                    <Text style={styles.actionButtonText}>Bloquear Ahora</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                    style={[styles.actionButton, styles.unblockButton, !isBlocked && styles.disabledButton]} 
-                    onPress={() => isBlocked && handleToggle()}
-                    activeOpacity={0.7}
-                    disabled={!isBlocked}
-                >
-                    <Unlock size={30} color="#000" />
-                    <Text style={styles.actionButtonText}>Desbloquear</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Info Cards */}
-            <View style={styles.infoSection}>
-                <Text style={[styles.infoLabel, { color: isDark ? '#FFF' : '#000' }]}>Sala:</Text>
-                <TouchableOpacity 
-                    style={[styles.infoCard, { backgroundColor: isDark ? '#2D2D2D' : '#D9D9D9' }]}
-                    onPress={() => navigation.navigate('RoomDetails', { roomId, roomName })}
-                >
-                    <Home size={32} color={isDark ? '#FFF' : '#000'} />
-                    <Text style={[styles.infoCardText, { color: isDark ? '#FFF' : '#000' }]}>{roomName}</Text>
-                </TouchableOpacity>
-
-                <Text style={[styles.infoLabel, { color: isDark ? '#FFF' : '#000' }]}>Tiempo estimado de bloqueo:</Text>
-                <View style={[styles.infoCard, { backgroundColor: isDark ? '#2D2D2D' : '#D9D9D9' }]}>
+                <View style={[styles.infoCard, { backgroundColor: isDark ? '#333' : '#D9D9D9' }]}>
                     <Clock size={32} color={isDark ? '#FFF' : '#000'} />
+                    <Text style={[styles.infoCardLabel, { color: isDark ? '#BBB' : '#444' }]}>Tiempo Est.</Text>
                     <Text style={[styles.infoCardText, { color: isDark ? '#FFF' : '#000' }]}>{device.estimatedTime || 'No configurado'}</Text>
                 </View>
             </View>
@@ -168,8 +187,9 @@ const DeviceControlScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
-    backgroundColor: '#A0A0A0', // Matches the grey background in screenshot
+    backgroundColor: '#FFF',
   },
   header: {
     flexDirection: 'row',
@@ -185,16 +205,12 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   backButton: {
-    backgroundColor: '#FFF',
-    borderRadius: 15,
-    padding: 2,
-    borderWidth: 2,
-    borderColor: '#000',
+    padding: 5,
   },
   content: {
-    flex: 1,
     paddingHorizontal: 30,
     alignItems: 'center',
+    paddingBottom: 40,
   },
   shieldContainer: {
     marginVertical: 30,
@@ -206,9 +222,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#000',
-  },
-  shieldOuter: {
-    padding: 10,
   },
   statusSection: {
     alignItems: 'center',
@@ -243,50 +256,91 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 15,
     paddingHorizontal: 20,
     marginBottom: 15,
-    borderRadius: 0, // Requested square design
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderRadius: 10,
+    elevation: 4,
   },
   blockButton: {
-    backgroundColor: '#FF1E1E',
+    backgroundColor: COLORS.red,
   },
   unblockButton: {
-    backgroundColor: '#00FF00',
+    backgroundColor: COLORS.green,
   },
   disabledButton: {
-    opacity: 0.5,
-    backgroundColor: '#B0B0B0',
+    opacity: 0.3,
   },
   actionButtonText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#FFF',
     marginLeft: 15,
   },
-  infoSection: {
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     width: '100%',
   },
-  infoLabel: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
-  },
   infoCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#D9D9D9',
-    padding: 12,
-    marginBottom: 20,
+    width: '48%',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  infoCardLabel: {
+    fontSize: 14,
+    color: '#444',
+    marginTop: 5,
   },
   infoCardText: {
-    fontSize: 28,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
-    marginLeft: 15,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#D9D9D9',
+    width: '85%',
+    padding: 20,
+    borderRadius: 15,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    textAlign: 'center',
+    color: '#000',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: '#C84343',
+  },
+  confirmButton: {
+    backgroundColor: '#3E76C5',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFF',
   },
   bottomNav: {
     flexDirection: 'row',
@@ -305,47 +359,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: '#000',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#D9D9D9',
-    width: '90%',
-    padding: 20,
-    borderRadius: 0,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 30,
-    textAlign: 'center',
-    color: '#000',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 0,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  cancelButton: {
-    backgroundColor: '#C84343',
-  },
-  confirmButton: {
-    backgroundColor: '#3E76C5',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFF',
-  }
 });
 
 export default DeviceControlScreen;

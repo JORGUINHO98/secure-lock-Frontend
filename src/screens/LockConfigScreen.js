@@ -1,14 +1,12 @@
 import React from 'react';
-import { 
-  View, 
+import { Platform, View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
   SafeAreaView, 
   StatusBar,
   ScrollView,
-  Switch
-} from 'react-native';
+  Switch } from 'react-native';
 import { Undo2, Moon, BookOpen, Settings, Calendar, Home, Users, User } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
 
@@ -93,6 +91,7 @@ const LockConfigScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
     backgroundColor: '#A0A0A0',
   },

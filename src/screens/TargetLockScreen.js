@@ -1,41 +1,97 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   SafeAreaView, 
-  StatusBar,
+  StatusBar, 
+  Platform,
   Dimensions,
-  Image
+  ActivityIndicator
 } from 'react-native';
-import { ShieldCheck, Lock } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Shield, Lock, Smartphone, RefreshCw, Unlock } from 'lucide-react-native';
+import { useAppContext } from '../context/AppContext';
+import { COLORS } from '../theme/colors';
+import socketService from '../services/socket';
 
 const { width } = Dimensions.get('window');
 
-const TargetLockScreen = () => {
+const TargetLockScreen = ({ navigation }) => {
+  const { theme } = useAppContext();
+  const [isLocked, setIsLocked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [deviceId, setDeviceId] = useState(null);
+
+  useEffect(() => {
+    const setupConnection = async () => {
+      try {
+        const storedId = await AsyncStorage.getItem('device_unique_id');
+        const token = await AsyncStorage.getItem('userToken');
+        
+        if (storedId) {
+          setDeviceId(storedId);
+          
+          socketService.connect(storedId, token, (message) => {
+            if (message.type === 'device.status') {
+              const { action, is_locked } = message.payload;
+              setIsLocked(is_locked);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Socket connection error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    setupConnection();
+
+    return () => {
+      socketService.disconnect();
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, isLocked ? styles.lockedContainer : styles.unlockedContainer]}>
       <StatusBar barStyle="light-content" />
-      
       <View style={styles.content}>
-        {/* Shield with Lock Icon */}
-        <View style={styles.shieldContainer}>
-          <View style={styles.shieldBackground}>
-            <ShieldCheck size={220} color="#4FB3C3" strokeWidth={1} />
-            <View style={styles.lockOverlay}>
-              <Lock size={60} color="#4FB3C3" />
+        {!isLocked ? (
+          <View style={styles.statusView}>
+            <View style={styles.iconContainer}>
+              <View style={[styles.glowCircle, { backgroundColor: 'rgba(0, 230, 118, 0.1)' }]}>
+                <Unlock size={100} color={COLORS.green} />
+              </View>
+            </View>
+            <Text style={styles.brandTitle}>Secure Lock</Text>
+            <Text style={styles.statusText}>Dispositivo Libre</Text>
+            <View style={styles.remoteIndicator}>
+              <Text style={styles.remoteText}>ESPERANDO ÓRDENES...</Text>
             </View>
           </View>
-        </View>
-
-        {/* Branding */}
-        <Text style={styles.brandTitle}>Secure Lock</Text>
-        <Text style={styles.brandSubtitle}>INSTANT MOBILE PROTECTION</Text>
-
-        {/* Remote Control Indicator */}
-        <View style={styles.remoteIndicator}>
-          <Text style={styles.remoteText}>Control de dispositivo remoto</Text>
-        </View>
+        ) : (
+          <View style={styles.statusView}>
+            <View style={styles.iconContainer}>
+              <View style={[styles.glowCircle, { backgroundColor: 'rgba(255, 49, 49, 0.1)' }]}>
+                <Lock size={100} color={COLORS.red} />
+              </View>
+            </View>
+            <Text style={styles.brandTitle}>Secure Lock</Text>
+            <Text style={styles.statusText}>DISPOSITIVO BLOQUEADO</Text>
+            <View style={[styles.remoteIndicator, { backgroundColor: COLORS.red }]}>
+              <Text style={styles.remoteText}>PROTECCIÓN ACTIVA</Text>
+            </View>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -44,55 +100,70 @@ const TargetLockScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000', // Dark background as per image
+  },
+  unlockedContainer: {
+    backgroundColor: '#000',
+  },
+  lockedContainer: {
+    backgroundColor: '#1a0000', // Un negro rojizo muy oscuro y premium
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
   },
-  shieldContainer: {
-    marginBottom: 40,
+  statusView: {
     alignItems: 'center',
-    justifyContent: 'center',
+    width: '100%',
   },
-  shieldBackground: {
-    position: 'relative',
+  iconContainer: {
+    marginBottom: 50,
+  },
+  glowCircle: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  lockOverlay: {
-    position: 'absolute',
-    top: '40%',
+    shadowColor: '#FFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
   },
   brandTitle: {
-    fontSize: 60,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#4FB3C3', // Cyan/Blue color from image
-    textAlign: 'center',
+    color: '#FFF',
     letterSpacing: 2,
+    marginBottom: 10,
+    textTransform: 'uppercase',
   },
-  brandSubtitle: {
-    fontSize: 16,
-    color: '#D9D9D9',
-    textAlign: 'center',
-    marginTop: 5,
-    letterSpacing: 1,
-    fontWeight: '600',
+  statusText: {
+    fontSize: 20,
+    color: '#AAA',
+    marginBottom: 40,
+    fontWeight: '500',
   },
   remoteIndicator: {
-    marginTop: 60,
-    backgroundColor: '#D9D9D9',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#333',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 30,
   },
   remoteText: {
-    fontSize: 24,
+    color: '#FFF',
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#000',
-    textAlign: 'center',
+    letterSpacing: 1,
   }
 });
 

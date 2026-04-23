@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -9,24 +9,45 @@ import {
   StatusBar,
   Dimensions,
   ScrollView,
+  ActivityIndicator,
   Alert
 } from 'react-native';
 import { useAppContext } from '../context/AppContext';
 import { Menu, LogOut, CheckCircle2, Undo2, X } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { COLORS, SPACING } from '../theme/colors';
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
-const QRCodeScreen = ({ navigation }) => {
+const QRCodeScreen = ({ route, navigation }) => {
   const { theme, logout, user } = useAppContext();
-  const [deviceId, setDeviceId] = useState('parent-1775741163475-Oihvs83n1');
+  const roomId = route?.params?.roomId || 'default-room-id';
   const isDark = theme === 'dark';
+  const [qrCodeData, setQrCodeData] = useState(roomId);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchQR = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.get(`/salas/${roomId}/qr/`);
+        setQrCodeData(response.data.invite_code || response.data.qr_base64 || roomId);
+      } catch (error) {
+        console.error("Error fetching QR:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (roomId !== 'default-room-id') {
+      fetchQR();
+    }
+  }, [roomId]);
 
   const generateNewId = () => {
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(7);
-    setDeviceId(`parent-${timestamp}-${randomStr}`);
+    setQrCodeData(`parent-${timestamp}-${randomStr}`);
   };
 
   const handleLogout = () => {
@@ -41,18 +62,16 @@ const QRCodeScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
-        <View style={styles.userIconContainer}>
-            <View style={[styles.userIconPlaceholder, { backgroundColor: isDark ? '#4FB3C3' : '#FFF' }]} />
-        </View>
-        <Text style={[styles.welcomeText, { color: isDark ? '#FFF' : '#000' }]}>Bienvenido: {user?.name || 'Admin'}</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <LogOut size={28} color="#FFFFFF" />
+      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#D9D9D9' }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Undo2 size={40} color={isDark ? '#FFF' : '#000'} />
         </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#000' }]}>QR de Sala</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <ImageBackground 
@@ -62,13 +81,6 @@ const QRCodeScreen = ({ navigation }) => {
       >
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }}>
             <View style={styles.content}>
-            {/* Back Button */}
-            <TouchableOpacity 
-                style={[styles.backButton, { backgroundColor: isDark ? '#333' : 'rgba(255, 255, 255, 0.7)', borderColor: isDark ? '#4FB3C3' : '#000' }]} 
-                onPress={() => navigation.goBack()}
-            >
-                <Undo2 size={32} color={isDark ? '#FFF' : '#000'} />
-            </TouchableOpacity>
 
             {/* Success/Check Icon */}
             <View style={styles.iconContainer}>
@@ -83,18 +95,22 @@ const QRCodeScreen = ({ navigation }) => {
 
             {/* QR Code Card */}
             <View style={[styles.qrCard, { backgroundColor: '#FFF' }]}>
-                <QRCode
-                value={deviceId}
-                size={width * 0.5}
-                color="black"
-                backgroundColor="white"
-                />
+                {isLoading ? (
+                  <ActivityIndicator size="large" color="#000" style={{ height: width * 0.5, justifyContent: 'center' }} />
+                ) : (
+                  <QRCode
+                  value={qrCodeData}
+                  size={width * 0.5}
+                  color="black"
+                  backgroundColor="white"
+                  />
+                )}
             </View>
 
             {/* Device ID Display */}
             <View style={[styles.idContainer, { backgroundColor: isDark ? '#333' : '#D1D1D1' }]}>
                 <Text style={[styles.idLabel, { color: isDark ? '#FFF' : '#000' }]}>ID del Dispositivo</Text>
-                <Text style={[styles.idValue, { color: isDark ? '#FFF' : '#000' }]}>{deviceId}</Text>
+                <Text style={[styles.idValue, { color: isDark ? '#FFF' : '#000' }]}>{qrCodeData}</Text>
             </View>
 
             {/* Generate New Button */}
@@ -117,30 +133,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    backgroundColor: '#A8C3C0',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#D9D9D9',
   },
-  userIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#72A0C1', // Light blue as in image
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  userIconPlaceholder: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#FFF',
-  },
-  welcomeText: {
-    fontSize: 18,
+  headerTitle: {
+    fontSize: 36,
     fontWeight: 'bold',
     color: '#000',
-    textAlign: 'center',
+  },
+  backButton: {
+    padding: 5,
+  },
+  background: {
     flex: 1,
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.md,
   },
   logoutButton: {
     backgroundColor: '#1E234C',

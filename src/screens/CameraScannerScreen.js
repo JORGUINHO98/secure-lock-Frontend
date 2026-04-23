@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { X } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../services/api';
 
 const CameraScannerScreen = ({ route, navigation }) => {
-  const { roomId } = route.params;
+  const { roomId } = route?.params || {};
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
 
@@ -25,13 +27,46 @@ const CameraScannerScreen = ({ route, navigation }) => {
     );
   }
 
-  const handleBarCodeScanned = ({ data }) => {
+  const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
     setScanned(true);
-    navigation.navigate('RoomDetails', { 
-        roomId, 
-        scanResult: data 
-    });
+    
+    console.log('QR Escaneado:', data);
+    const invite_code = data;
+    const id_unico = `dispositivo-${Math.random().toString(36).substr(2, 9)}`;
+
+    try {
+      // Guardar el id_unico generado localmente para usarlo en la conexión WebSocket
+      await AsyncStorage.setItem('deviceId', id_unico);
+      
+      const response = await api.post('/salas/link-device/', {
+        invite_code,
+        id_unico
+      });
+      
+      Alert.alert(
+        "Vinculado",
+        "Dispositivo vinculado correctamente a la sala.",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate('TargetLockScreen', { roomId: invite_code })
+          }
+        ]
+      );
+    } catch (error) {
+      console.error("Error al vincular el dispositivo:", error);
+      Alert.alert(
+        "Error",
+        "No se pudo vincular el dispositivo. Intente de nuevo.",
+        [
+          {
+            text: "Reintentar",
+            onPress: () => setScanned(false)
+          }
+        ]
+      );
+    }
   };
 
   return (

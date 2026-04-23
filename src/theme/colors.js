@@ -13,11 +13,11 @@ export const COLORS = {
     offWhite: '#F9F9F9',
   },
   border: '#E0E0E0',
-  error: '#FF4757',
-  success: '#2ED573',
-  green: '#00FF66',
-  red: '#FF1E1E',
-  blue: '#6699CC',
+  error: '#FF3131', // Rojo eléctrico más llamativo
+  success: '#00E676', // Verde brillante moderno
+  green: '#00E676',
+  red: '#FF3131',
+  blue: '#4FB3C3',
 };
 
 export const SPACING = {
