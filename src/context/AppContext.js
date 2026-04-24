@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import * as SecureStore from 'expo-secure-store';
 
@@ -60,9 +60,44 @@ export const AppProvider = ({ children }) => {
     saveUser();
   }, [user, isInitialized]);
 
+  // Función reutilizable para obtener salas y dispositivos del backend
+  const refreshRoomsAndDevices = useCallback(async () => {
+    try {
+      const [salasRes, dispositivosRes] = await Promise.all([
+        api.get('/salas/'),
+        api.get('/dispositivos/'),
+      ]);
+
+      setRooms(salasRes.data);
+
+      // Agrupar dispositivos por sala (campo sala o room)
+      const grouped = {};
+      salasRes.data.forEach(sala => {
+        grouped[sala.id] = [];
+      });
+      dispositivosRes.data.forEach(device => {
+        const salaId = device.sala || device.room;
+        if (salaId && grouped[salaId]) {
+          grouped[salaId].push(device);
+        } else if (salaId) {
+          grouped[salaId] = [device];
+        }
+      });
+      setRoomDevices(grouped);
+    } catch (error) {
+      console.log('Error cargando salas y dispositivos:', error.message);
+    }
+  }, []);
+
+  // Cargar salas y dispositivos cuando el usuario inicia sesión
   useEffect(() => {
     if (user) {
       checkPremiumStatus();
+      refreshRoomsAndDevices();
+    } else {
+      // Limpiar datos al cerrar sesión
+      setRooms([]);
+      setRoomDevices({});
     }
   }, [user]);
 
@@ -80,7 +115,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const addRoom = (name) => {
+  const addRoom = async (name) => {
     if (!isPremium && rooms.length >= 2) {
       return false;
     }
@@ -88,99 +123,187 @@ export const AppProvider = ({ children }) => {
       alert('Has alcanzado el límite de 100 salas.');
       return false;
     }
-    const id = Math.random().toString();
-    const newRoom = {
-      id,
-      name,
-      type: 'default'
-    };
-    setRooms([...rooms, newRoom]);
-    setRoomDevices({ ...roomDevices, [id]: [] });
-    return true;
+    try {
+      const response = await api.post('/salas/', { name });
+      const newRoom = response.data;
+      setRooms(prev => [...prev, newRoom]);
+      setRoomDevices(prev => ({ ...prev, [newRoom.id]: [] }));
+      return true;
+    } catch (error) {
+      console.log('Error creando sala:', error.message);
+      return false;
+    }
   };
 
-  const updateRoom = (id, newName) => {
-    setRooms(rooms.map(room => room.id === id ? { ...room, name: newName } : room));
+  const updateRoom = async (id, newName) => {
+    try {
+      const response = await api.patch(`/salas/${id}/`, { name: newName });
+      setRooms(prev => prev.map(room => room.id === id ? response.data : room));
+    } catch (error) {
+      console.log('Error actualizando sala:', error.message);
+    }
   };
 
-  const deleteRoom = (id) => {
-    setRooms(rooms.filter(room => room.id !== id));
-    const newRoomDevices = { ...roomDevices };
-    delete newRoomDevices[id];
-    setRoomDevices(newRoomDevices);
+  const deleteRoom = async (id) => {
+    try {
+      await api.delete(`/salas/${id}/`);
+      setRooms(prev => prev.filter(room => room.id !== id));
+      setRoomDevices(prev => {
+        const updated = { ...prev };
+        delete updated[id];
+        return updated;
+      });
+    } catch (error) {
+      console.log('Error eliminando sala:', error.message);
+    }
   };
 
-  const addDeviceToRoom = (roomId, deviceName) => {
+  const addDeviceToRoom = async (roomId, deviceName) => {
     const currentDevices = roomDevices[roomId] || [];
     if (!isPremium && currentDevices.length >= 2) {
       return false; // Limit reached for free users
     }
     
-    const newDevice = {
-      id: Math.random().toString(),
-      name: deviceName,
-      status: 'Activo',
-      estimatedTime: null
-    };
-    setRoomDevices({
-      ...roomDevices,
-      [roomId]: [...currentDevices, newDevice]
-    });
-    return true;
-  };
-
-  const updateDevice = (roomId, deviceId, newName) => {
-    const updatedDevices = roomDevices[roomId].map(device =>
-      device.id === deviceId ? { ...device, name: newName } : device
-    );
-    setRoomDevices({ ...roomDevices, [roomId]: updatedDevices });
-  };
-
-  const blockAllDevicesInRoom = (roomId) => {
-    if (roomDevices[roomId]) {
-      const updatedDevices = roomDevices[roomId].map(device => ({
-        ...device,
-        status: 'Bloqueado'
-      }));
-      setRoomDevices({
-        ...roomDevices,
-        [roomId]: updatedDevices
+    try {
+      const response = await api.post('/dispositivos/', {
+        name: deviceName,
+        sala: roomId,
       });
+      const newDevice = response.data;
+      setRoomDevices(prev => ({
+        ...prev,
+        [roomId]: [...(prev[roomId] || []), newDevice],
+      }));
+      return true;
+    } catch (error) {
+      console.log('Error agregando dispositivo:', error.message);
+      return false;
     }
   };
 
-  const setDeviceSchedule = (roomId, deviceId, schedule) => {
-    const updatedDevices = roomDevices[roomId].map(device =>
-      device.id === deviceId ? { ...device, estimatedTime: schedule } : device
-    );
-    setRoomDevices({ ...roomDevices, [roomId]: updatedDevices });
+  const updateDevice = async (roomId, deviceId, newName) => {
+    try {
+      const response = await api.patch(`/dispositivos/${deviceId}/`, { name: newName });
+      setRoomDevices(prev => ({
+        ...prev,
+        [roomId]: prev[roomId].map(device =>
+          device.id === deviceId ? response.data : device
+        ),
+      }));
+    } catch (error) {
+      console.log('Error actualizando dispositivo:', error.message);
+    }
   };
 
-  const deleteDevice = (roomId, deviceId) => {
-    const updatedDevices = roomDevices[roomId].filter(device => device.id !== deviceId);
-    setRoomDevices({ ...roomDevices, [roomId]: updatedDevices });
+  const blockAllDevicesInRoom = async (roomId) => {
+    if (roomDevices[roomId]) {
+      try {
+        const promises = roomDevices[roomId].map(device =>
+          api.post(`/dispositivos/${device.id}/lock/`, { allow_emergency_calls: true })
+        );
+        await Promise.all(promises);
+        setRoomDevices(prev => ({
+          ...prev,
+          [roomId]: prev[roomId].map(device => ({
+            ...device,
+            status: 'Bloqueado',
+          })),
+        }));
+      } catch (error) {
+        console.log('Error bloqueando dispositivos de la sala:', error.message);
+      }
+    }
   };
 
-  const toggleDeviceStatus = (roomId, deviceId) => {
-    const updatedDevices = roomDevices[roomId].map(device =>
-      device.id === deviceId
-        ? { ...device, status: device.status === 'Activo' ? 'Bloqueado' : 'Activo' }
-        : device
-    );
-    setRoomDevices({ ...roomDevices, [roomId]: updatedDevices });
+  const setDeviceSchedule = async (roomId, deviceId, schedule) => {
+    try {
+      const response = await api.patch(`/dispositivos/${deviceId}/`, { estimatedTime: schedule });
+      setRoomDevices(prev => ({
+        ...prev,
+        [roomId]: prev[roomId].map(device =>
+          device.id === deviceId ? { ...device, estimatedTime: schedule } : device
+        ),
+      }));
+    } catch (error) {
+      console.log('Error configurando horario:', error.message);
+    }
   };
 
-  const blockAllInRoom = (roomId) => {
-    const updatedDevices = roomDevices[roomId].map(device => ({ ...device, status: 'Bloqueado' }));
-    setRoomDevices({ ...roomDevices, [roomId]: updatedDevices });
+  const deleteDevice = async (roomId, deviceId) => {
+    try {
+      await api.delete(`/dispositivos/${deviceId}/`);
+      setRoomDevices(prev => ({
+        ...prev,
+        [roomId]: prev[roomId].filter(device => device.id !== deviceId),
+      }));
+    } catch (error) {
+      console.log('Error eliminando dispositivo:', error.message);
+    }
   };
 
-  const blockAllRooms = () => {
-    const newRoomDevices = { ...roomDevices };
-    Object.keys(newRoomDevices).forEach(roomId => {
-      newRoomDevices[roomId] = newRoomDevices[roomId].map(device => ({ ...device, status: 'Bloqueado' }));
-    });
-    setRoomDevices(newRoomDevices);
+  const toggleDeviceStatus = async (roomId, deviceId, targetStatus) => {
+    try {
+      if (targetStatus === 'Bloqueado') {
+        const response = await api.post(`/dispositivos/${deviceId}/lock/`, { allow_emergency_calls: true });
+        if (response.status === 200) {
+          setRoomDevices(prev => ({
+            ...prev,
+            [roomId]: prev[roomId].map(device =>
+              device.id === deviceId ? { ...device, status: 'Bloqueado' } : device
+            ),
+          }));
+        }
+      } else {
+        const response = await api.post(`/dispositivos/${deviceId}/unlock/`);
+        if (response.status === 200) {
+          setRoomDevices(prev => ({
+            ...prev,
+            [roomId]: prev[roomId].map(device =>
+              device.id === deviceId ? { ...device, status: 'Activo' } : device
+            ),
+          }));
+        }
+      }
+    } catch (error) {
+      console.log('Error cambiando estado del dispositivo:', error.message);
+      throw error; // Re-throw para que DeviceControlScreen pueda capturarlo
+    }
+  };
+
+  const blockAllInRoom = async (roomId) => {
+    try {
+      const devices = roomDevices[roomId] || [];
+      const promises = devices.map(device =>
+        api.post(`/dispositivos/${device.id}/lock/`, { allow_emergency_calls: true })
+      );
+      await Promise.all(promises);
+      setRoomDevices(prev => ({
+        ...prev,
+        [roomId]: prev[roomId].map(device => ({ ...device, status: 'Bloqueado' })),
+      }));
+    } catch (error) {
+      console.log('Error bloqueando todos los dispositivos:', error.message);
+    }
+  };
+
+  const blockAllRooms = async () => {
+    try {
+      const allPromises = [];
+      Object.keys(roomDevices).forEach(roomId => {
+        roomDevices[roomId].forEach(device => {
+          allPromises.push(api.post(`/dispositivos/${device.id}/lock/`, { allow_emergency_calls: true }));
+        });
+      });
+      await Promise.all(allPromises);
+      
+      const newRoomDevices = { ...roomDevices };
+      Object.keys(newRoomDevices).forEach(roomId => {
+        newRoomDevices[roomId] = newRoomDevices[roomId].map(device => ({ ...device, status: 'Bloqueado' }));
+      });
+      setRoomDevices(newRoomDevices);
+    } catch (error) {
+      console.log('Error bloqueando todas las salas:', error.message);
+    }
   };
 
   return (
@@ -205,7 +328,8 @@ export const AppProvider = ({ children }) => {
       toggleTheme,
       user,
       setUser,
-      logout
+      logout,
+      refreshRoomsAndDevices
     }}>
       {children}
     </AppContext.Provider>
@@ -213,3 +337,4 @@ export const AppProvider = ({ children }) => {
 };
 
 export const useAppContext = () => useContext(AppContext);
+

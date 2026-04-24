@@ -46,9 +46,9 @@ const RoomsScreen = ({ navigation }) => {
     }
   };
 
-  const handleCreateRoom = () => {
+  const handleCreateRoom = async () => {
     if (roomNameInput.trim()) {
-      const success = addRoom(roomNameInput);
+      const success = await addRoom(roomNameInput);
       if (success) {
         setRoomNameInput('');
         setCreateModalVisible(false);
@@ -65,9 +65,9 @@ const RoomsScreen = ({ navigation }) => {
     setEditModalVisible(true);
   };
 
-  const handleUpdateRoom = () => {
+  const handleUpdateRoom = async () => {
     if (roomNameInput.trim() && currentRoom) {
-      updateRoom(currentRoom.id, roomNameInput);
+      await updateRoom(currentRoom.id, roomNameInput);
       setEditModalVisible(false);
       setCurrentRoom(null);
     }

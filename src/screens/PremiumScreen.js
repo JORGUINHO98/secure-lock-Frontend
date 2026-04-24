@@ -35,16 +35,18 @@ const PremiumScreen = ({ navigation }) => {
   const handleSubscribe = async () => {
     setIsLoading(true);
     try {
-      // Simulando llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // await api.post('/suscripciones/', {});
+      await api.post('/suscripciones/upgrade/');
       await checkPremiumStatus();
       Alert.alert('💳 ¡Éxito!', 'Tu suscripción Premium se ha activado correctamente.');
       setShowPayment(false);
       navigation.goBack();
     } catch (error) {
-      console.error('Error en suscripción:', error);
-      Alert.alert('❌ Error', 'Hubo un problema al procesar tu suscripción.');
+      const message =
+        error.response?.data?.detail ||
+        error.response?.data?.error ||
+        'Hubo un problema al procesar tu suscripción.';
+      console.log('Error en suscripción:', error.message);
+      Alert.alert('❌ Error', message);
     } finally {
       setIsLoading(false);
     }

@@ -9,7 +9,9 @@ import {
   ScrollView, 
   KeyboardAvoidingView, 
   Platform,
-  Dimensions
+  Dimensions,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import * as SecureStore from 'expo-secure-store';
@@ -18,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING } from '../theme/colors';
 import CustomInput from '../components/CustomInput';
 import { useAppContext } from '../context/AppContext';
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -25,6 +28,7 @@ const AuthScreen = ({ navigation }) => {
   const { setUser } = useAppContext();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('register'); // Default to 'register' to match the image
+  const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
     fullName: '',
     email: '',
@@ -36,28 +40,49 @@ const AuthScreen = ({ navigation }) => {
     setForm({ ...form, [field]: value });
   };
 
-  const handleSubmit = async () => {
-    try {
-      // En un entorno real, aquí se obtendría el token del backend
-      const mockToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_token";
-      await SecureStore.setItemAsync('userToken', mockToken);
+  // Helper: realiza login real contra la API y configura el usuario
+  const performLogin = async (email, password) => {
+    // 1. Obtener token JWT
+    const tokenResponse = await api.post('/auth/token/', { email, password });
+    const { access } = tokenResponse.data;
+    await SecureStore.setItemAsync('userToken', access);
 
+    // 2. Obtener perfil del usuario
+    const profileResponse = await api.get('/users/me/');
+    const userData = profileResponse.data;
+    setUser(userData);
+  };
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
       if (activeTab === 'login') {
-        // Simular login
-        setUser({
-          name: form.fullName || form.email.split('@')[0], // Fallback al nombre de usuario del email
-          email: form.email
-        });
+        // Login real
+        await performLogin(form.email, form.password);
       } else {
-        // Simular registro
-        setUser({
-          name: form.fullName,
-          email: form.email
+        // Registro real
+        if (form.password !== form.confirmPassword) {
+          Alert.alert('Error', 'Las contraseñas no coinciden.');
+          setIsLoading(false);
+          return;
+        }
+        await api.post('/users/register/', {
+          full_name: form.fullName,
+          email: form.email,
+          password: form.password,
         });
+        // Auto-login después del registro exitoso
+        await performLogin(form.email, form.password);
       }
       navigation.navigate('Home');
     } catch (error) {
-      console.error("Error saving token:", error);
+      const message =
+        error.response?.data?.detail ||
+        error.response?.data?.error ||
+        (error.response?.data ? JSON.stringify(error.response.data) : 'Error de conexión. Verifica tu red e inténtalo de nuevo.');
+      Alert.alert('Error', message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -143,10 +168,14 @@ const AuthScreen = ({ navigation }) => {
               )}
 
               {/* Submit Button */}
-              <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>
-                  {activeTab === 'login' ? t('common.login') : t('auth.createAccount')}
-                </Text>
+              <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.7 }]} onPress={handleSubmit} disabled={isLoading}>
+                {isLoading ? (
+                  <ActivityIndicator color={COLORS.background.white} />
+                ) : (
+                  <Text style={styles.buttonText}>
+                    {activeTab === 'login' ? t('common.login') : t('auth.createAccount')}
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>

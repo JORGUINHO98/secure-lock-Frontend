@@ -30,12 +30,15 @@ const RoomDetailsScreen = ({ route, navigation }) => {
   const isDark = theme === 'dark';
 
   useEffect(() => {
-    if (scanResult) {
-      const success = addDeviceToRoom(roomId, `Dispositivo ${scanResult.substring(0, 8)}`);
-      if (!success) {
-        navigation.navigate('Premium');
+    const addScannedDevice = async () => {
+      if (scanResult) {
+        const success = await addDeviceToRoom(roomId, `Dispositivo ${scanResult.substring(0, 8)}`);
+        if (!success) {
+          navigation.navigate('Premium');
+        }
       }
-    }
+    };
+    addScannedDevice();
   }, [scanResult]);
 
   const devices = roomDevices[roomId] || [];
@@ -49,8 +52,8 @@ const RoomDetailsScreen = ({ route, navigation }) => {
         { 
           text: t('roomDetails.block_all') || "Bloquear Todo", 
           style: "destructive", 
-          onPress: () => {
-            blockAllDevicesInRoom(roomId);
+          onPress: async () => {
+            await blockAllDevicesInRoom(roomId);
             Alert.alert(t('common.success'), t('roomDetails.block_success') || "Todos los dispositivos de esta sala han sido bloqueados.");
           }
         }
@@ -64,9 +67,9 @@ const RoomDetailsScreen = ({ route, navigation }) => {
     setEditModalVisible(true);
   };
 
-  const handleUpdateDevice = () => {
+  const handleUpdateDevice = async () => {
     if (deviceNameInput.trim() && currentDevice) {
-        updateDevice(roomId, currentDevice.id, deviceNameInput);
+        await updateDevice(roomId, currentDevice.id, deviceNameInput);
         setEditModalVisible(false);
         setCurrentDevice(null);
     }
