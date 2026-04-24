@@ -60,7 +60,7 @@ const HomeScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => setMenuVisible(true)}>
           <Menu size={32} color={isDark ? '#FFF' : '#1E234C'} />
         </TouchableOpacity>
-        <Text style={[styles.welcomeText, { color: isDark ? '#FFF' : '#000' }]}>{t('home.welcome_user', { name: user?.name || 'Admin' })}</Text>
+        <Text style={[styles.welcomeText, { color: isDark ? '#FFF' : '#000' }]}>{t('home.welcome_user', { name: user?.name || user?.full_name || user?.username || user?.email?.split('@')[0] || t('common.user') })}</Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <LogOut size={28} color="#FFFFFF" />
         </TouchableOpacity>

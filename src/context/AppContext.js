@@ -25,13 +25,45 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // Cargar usuario desde SecureStore al iniciar
+  // Normalizar el nombre y la imagen del usuario desde diferentes campos del backend
+  const normalizeUserName = (userData) => {
+    const name =
+      userData.full_name ||
+      userData.name ||
+      (userData.first_name && userData.last_name
+        ? `${userData.first_name} ${userData.last_name}`.trim()
+        : userData.first_name || userData.last_name || '') ||
+      userData.username ||
+      userData.email?.split('@')[0] ||
+      '';
+    
+    // Normalizar también la imagen de perfil
+    const avatar = userData.avatar || userData.profile_image || userData.photo || userData.image || null;
+    
+    return { ...userData, name, avatar };
+  };
+
+  // Cargar usuario desde SecureStore al iniciar, y re-validar con la API
   useEffect(() => {
     const loadUser = async () => {
       try {
         const savedUser = await SecureStore.getItemAsync('userData');
+        const token = await SecureStore.getItemAsync('userToken');
+
         if (savedUser) {
-          setUser(JSON.parse(savedUser));
+          const parsed = JSON.parse(savedUser);
+          setUser(normalizeUserName(parsed));
+        }
+
+        // Si hay token, re-fetch del perfil para tener datos actualizados
+        if (token) {
+          try {
+            const profileResponse = await api.get('/users/me/');
+            const freshUser = normalizeUserName(profileResponse.data);
+            setUser(freshUser);
+          } catch (err) {
+            console.log('No se pudo refrescar el perfil del usuario:', err.message);
+          }
         }
       } catch (error) {
         console.log('Error cargando usuario de SecureStore', error);
@@ -160,8 +192,16 @@ export const AppProvider = ({ children }) => {
 
   const addDeviceToRoom = async (roomId, deviceName) => {
     const currentDevices = roomDevices[roomId] || [];
+    
+    // Validar límites según el plan
     if (!isPremium && currentDevices.length >= 2) {
-      return false; // Limit reached for free users
+      alert('Límite alcanzado: Los usuarios gratuitos solo pueden tener 2 dispositivos por sala.');
+      return false;
+    }
+    
+    if (isPremium && currentDevices.length >= 50) {
+      alert('Límite alcanzado: El plan Premium permite hasta 50 dispositivos por sala.');
+      return false;
     }
     
     try {

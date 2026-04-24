@@ -6,7 +6,8 @@ import { Platform, View,
   SafeAreaView, 
   StatusBar,
   ScrollView,
-  Alert } from 'react-native';
+  Alert,
+  Image } from 'react-native';
 import { User, LogOut, CreditCard, ChevronRight, Home, Users, Settings } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
@@ -57,10 +58,17 @@ const AccountScreen = ({ navigation }) => {
         {/* User Info Card */}
         <View style={[styles.userCard, { backgroundColor: isDark ? '#333' : '#F0F0F0' }]}>
           <View style={styles.avatar}>
-            <User size={50} color="#FFF" />
+            {(user?.avatar || user?.profile_image || user?.photo) ? (
+              <Image
+                source={{ uri: user.avatar || user.profile_image || user.photo }}
+                style={{ width: 80, height: 80, borderRadius: 40 }}
+              />
+            ) : (
+              <User size={50} color="#FFF" />
+            )}
           </View>
           <View style={styles.userInfo}>
-            <Text style={[styles.userName, { color: isDark ? '#FFF' : '#000' }]}>{user?.name || t('common.user')}</Text>
+            <Text style={[styles.userName, { color: isDark ? '#FFF' : '#000' }]}>{user?.name || user?.full_name || user?.username || t('common.user')}</Text>
             <Text style={styles.userEmail}>{user?.email || 'email@example.com'}</Text>
           </View>
         </View>
@@ -148,6 +156,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#6C5CE7',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   userInfo: {
     marginLeft: 20,

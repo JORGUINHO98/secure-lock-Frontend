@@ -11,7 +11,7 @@ import { Platform, View,
   Modal,
   TextInput,
   Alert } from 'react-native';
-import { Undo2, Plus, Home, Users, User, Pencil, Trash2, Home as HomeIcon, Lock } from 'lucide-react-native';
+import { Undo2, Plus, Home, Users, User, Pencil, Trash2, Shield, Lock, Layout } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING } from '../theme/colors';
 import { useAppContext } from '../context/AppContext';
@@ -30,7 +30,7 @@ const RoomsScreen = ({ navigation }) => {
   const isDark = theme === 'dark';
 
   const handlePlusPress = () => {
-    if (!isPremium && rooms.length >= 1) {
+    if (!isPremium && rooms.length >= 2) {
       Alert.alert(
         t('rooms.limit_reached'),
         t('rooms.limit_reached_sub'),
@@ -87,7 +87,7 @@ const RoomsScreen = ({ navigation }) => {
   const getRoomIcon = (type) => {
     return (
       <View style={[styles.iconContainer, { backgroundColor: isDark ? '#4FB3C3' : '#6C5CE7' }]}>
-        <HomeIcon size={60} color="#FFF" />
+        <Shield size={60} color="#FFF" />
       </View>
     );
   };

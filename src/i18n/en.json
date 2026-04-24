@@ -51,6 +51,12 @@
   "account": {
     "personal_data": "Personal Details",
     "change_photo": "Change Photo",
+    "photo_source": "Photo",
+    "take_photo": "Camera",
+    "from_gallery": "Gallery",
+    "camera": "Camera permission is required.",
+    "gallery": "Gallery permission is required.",
+    "photo_error": "Could not select the image.",
     "phone": "Phone",
     "location": "Location",
     "premium_plan": "Get Premium Plan",

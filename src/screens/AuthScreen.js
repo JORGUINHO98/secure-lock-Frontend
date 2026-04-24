@@ -50,7 +50,15 @@ const AuthScreen = ({ navigation }) => {
     // 2. Obtener perfil del usuario
     const profileResponse = await api.get('/users/me/');
     const userData = profileResponse.data;
-    setUser(userData);
+
+    // 3. Normalizar el nombre e imagen: el backend puede devolver full_name, avatar, etc.
+    const normalizedUser = {
+      ...userData,
+      name: userData.full_name || userData.name || userData.username || email.split('@')[0],
+      avatar: userData.avatar || userData.profile_image || userData.photo || null
+    };
+
+    setUser(normalizedUser);
   };
 
   const handleSubmit = async () => {
@@ -66,6 +74,8 @@ const AuthScreen = ({ navigation }) => {
           setIsLoading(false);
           return;
         }
+        // Limpiar cualquier token residual antes de registrar
+        await SecureStore.deleteItemAsync('userToken');
         await api.post('/users/register/', {
           full_name: form.fullName,
           email: form.email,

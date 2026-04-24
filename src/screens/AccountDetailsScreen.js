@@ -11,11 +11,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Dimensions
+  Dimensions,
+  Image,
+  ActivityIndicator
 } from 'react-native';
-import { ChevronLeft, User, Mail, Phone, MapPin, Save } from 'lucide-react-native';
+import { ChevronLeft, User, Mail, Phone, MapPin, Save, Camera } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
+import api from '../services/api';
+import * as ImagePicker from 'expo-image-picker';
 
 const { width } = Dimensions.get('window');
 
@@ -41,19 +45,26 @@ const AccountDetailsScreen = ({ navigation }) => {
   const { theme, user, setUser } = useAppContext();
   const { t } = useTranslation();
   const isDark = theme === 'dark';
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    name: user?.name || user?.full_name || '',
     email: user?.email || '',
     phone: user?.phone || '',
     location: user?.location || '',
   });
 
+  // URI local de la imagen seleccionada (para preview inmediato)
+  const [selectedImageUri, setSelectedImageUri] = useState(null);
+
+  // La URI de la foto puede venir del estado local o del usuario guardado
+  const avatarUri = selectedImageUri || user?.avatar || user?.profile_image || user?.photo || null;
+
   // Actualizar el formulario cuando los datos del usuario estén disponibles
   React.useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name || '',
+        name: user.name || user.full_name || '',
         email: user.email || '',
         phone: user.phone || '',
         location: user.location || '',
@@ -61,22 +72,147 @@ const AccountDetailsScreen = ({ navigation }) => {
     }
   }, [user]);
 
-  const handleSave = () => {
+  // Solicitar permisos y abrir selector de imagen
+  const pickImage = async (useCamera = false) => {
+    try {
+      // Solicitar permiso
+      if (useCamera) {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert(
+            t('common.error'),
+            t('account.camera')
+          );
+          return;
+        }
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert(
+            t('common.error'),
+            t('account.gallery')
+          );
+          return;
+        }
+      }
+
+      const result = useCamera
+        ? await ImagePicker.launchCameraAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        })
+        : await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const imageUri = result.assets[0].uri;
+        setSelectedImageUri(imageUri);
+
+        // Subir la imagen al backend
+        await uploadPhoto(imageUri);
+      }
+    } catch (error) {
+      console.log('Error seleccionando imagen:', error.message);
+      Alert.alert(t('common.error'), t('account.photo_error'));
+    }
+  };
+
+  // Subir foto al backend
+  const uploadPhoto = async (uri) => {
+    setIsUploadingPhoto(true);
+    try {
+      const formDataUpload = new FormData();
+
+      // Obtener el nombre y tipo del archivo
+      const filename = uri.split('/').pop();
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+      formDataUpload.append('avatar', {
+        uri,
+        name: filename,
+        type,
+      });
+
+      await api.patch('/users/me/', formDataUpload, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Actualizar el estado global del usuario con la nueva foto
+      setUser({
+        ...user,
+        avatar: uri,
+      });
+    } catch (error) {
+      console.log('Error subiendo foto:', error.message);
+      // Aunque falle el upload al backend, mantenemos la imagen localmente
+      setUser({
+        ...user,
+        avatar: uri,
+      });
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  // Mostrar opciones de selección de imagen
+  const handleChangePhoto = () => {
+    Alert.alert(
+      t('account.change_photo'),
+      t('account.photo_source'),
+      [
+        {
+          text: t('account.take_photo'),
+          onPress: () => pickImage(true),
+        },
+        {
+          text: t('account.from_gallery'),
+          onPress: () => pickImage(false),
+        },
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
+  const handleSave = async () => {
+    try {
+      // Intentar actualizar en el backend
+      await api.patch('/users/me/', {
+        full_name: formData.name,
+        phone: formData.phone,
+        location: formData.location,
+      });
+    } catch (error) {
+      console.log('Error actualizando perfil en el backend:', error.message);
+    }
+
     setUser({
       ...user,
       name: formData.name,
+      full_name: formData.name,
       phone: formData.phone,
       location: formData.location,
       // email no se modifica, se mantiene el original
     });
-    Alert.alert(t('common.success'), t('account.update_success') || "Tus datos han sido actualizados correctamente.");
+    Alert.alert(t('common.success'), t('account.update_success'));
     navigation.goBack();
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      
+
       <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <ChevronLeft size={32} color={isDark ? '#FFF' : '#1E234C'} />
@@ -86,50 +222,67 @@ const AccountDetailsScreen = ({ navigation }) => {
       </View>
 
       <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
         >
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <View style={styles.avatarContainer}>
-              <View style={[styles.avatar, { backgroundColor: '#6C5CE7' }]}>
-                <User size={60} color="#FFF" />
-              </View>
-              <TouchableOpacity style={styles.changeAvatarButton}>
+              <TouchableOpacity onPress={handleChangePhoto} activeOpacity={0.7}>
+                <View style={[styles.avatar, { backgroundColor: '#6C5CE7' }]}>
+                  {avatarUri ? (
+                    <Image
+                      source={{ uri: avatarUri }}
+                      style={styles.avatarImage}
+                    />
+                  ) : (
+                    <User size={60} color="#FFF" />
+                  )}
+                  {/* Overlay del ícono de cámara */}
+                  <View style={styles.cameraOverlay}>
+                    {isUploadingPhoto ? (
+                      <ActivityIndicator size="small" color="#FFF" />
+                    ) : (
+                      <Camera size={18} color="#FFF" />
+                    )}
+                  </View>
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.changeAvatarButton} onPress={handleChangePhoto}>
                 <Text style={styles.changeAvatarText}>{t('account.change_photo')}</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.form}>
-              <InputField 
-                icon={User} 
-                label={t('auth.fullName')} 
+              <InputField
+                icon={User}
+                label={t('auth.fullName')}
                 value={formData.name}
-                onChangeText={(text) => setFormData(prev => ({...prev, name: text}))}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
                 isDark={isDark}
               />
-              <InputField 
-                icon={Mail} 
-                label={t('auth.email')} 
+              <InputField
+                icon={Mail}
+                label={t('auth.email')}
                 value={formData.email}
-                onChangeText={() => {}}
+                onChangeText={() => { }}
                 keyboardType="email-address"
                 editable={false}
                 isDark={isDark}
               />
-              <InputField 
-                icon={Phone} 
-                label={t('account.phone')} 
+              <InputField
+                icon={Phone}
+                label={t('account.phone')}
                 value={formData.phone}
-                onChangeText={(text) => setFormData(prev => ({...prev, phone: text}))}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
                 keyboardType="phone-pad"
                 isDark={isDark}
               />
-              <InputField 
-                icon={MapPin} 
-                label={t('account.location')} 
+              <InputField
+                icon={MapPin}
+                label={t('account.location')}
                 value={formData.location}
-                onChangeText={(text) => setFormData(prev => ({...prev, location: text}))}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, location: text }))}
                 isDark={isDark}
               />
 
@@ -190,6 +343,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 8,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  cameraOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    left: 0,
+    height: 36,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   changeAvatarButton: {
     marginTop: 15,

@@ -25,26 +25,32 @@ const { width } = Dimensions.get('window');
 const QRCodeScreen = ({ route, navigation }) => {
   const { theme, logout } = useAppContext();
   const { t } = useTranslation();
-  const roomId = route?.params?.roomId || 'default-room-id';
+  const roomId = route?.params?.roomId;
+  const roomName = route?.params?.roomName || 'Sala';
   const isDark = theme === 'dark';
-  const [qrCodeData, setQrCodeData] = useState(roomId);
+  // Siempre inicializar con un string válido para el QR
+  const [qrCodeData, setQrCodeData] = useState(`securelock://sala/${String(roomId || 'default')}`);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchQR = async () => {
+      if (!roomId) return;
       setIsLoading(true);
       try {
         const response = await api.get(`/salas/${roomId}/qr/`);
-        setQrCodeData(response.data.invite_code || response.data.qr_base64 || roomId);
+        const data = response.data.invite_code || response.data.qr_base64 || '';
+        if (data && String(data).trim().length > 0) {
+          setQrCodeData(String(data));
+        }
       } catch (error) {
-        console.log("QR fetch failed (using local ID)");
+        console.log("QR fetch failed (usando ID local)");
+        // Fallback: generar un QR con info de la sala
+        setQrCodeData(`securelock://sala/${String(roomId)}?name=${encodeURIComponent(roomName)}`);
       } finally {
         setIsLoading(false);
       }
     };
-    if (roomId !== 'default-room-id') {
-      fetchQR();
-    }
+    fetchQR();
   }, [roomId]);
 
   const generateNewId = useCallback(() => {
@@ -92,7 +98,7 @@ const QRCodeScreen = ({ route, navigation }) => {
                   <ActivityIndicator size="large" color="#000" style={{ height: width * 0.45, justifyContent: 'center' }} />
                 ) : (
                   <QRCode
-                  value={qrCodeData}
+                  value={String(qrCodeData || 'securelock://error')}
                   size={width * 0.45}
                   color="black"
                   backgroundColor="white"
