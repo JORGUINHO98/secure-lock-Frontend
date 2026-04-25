@@ -8,7 +8,7 @@ class SocketService {
     this.onMessageCallback = null;
     this.connectionParams = { id_unico: null, token: null };
     // Usar la IP del backend (ajustar si es necesario)
-    this.WS_URL = process.env.EXPO_PUBLIC_WS_URL || 'ws://192.168.1.100:8000/ws/devices';
+    this.WS_URL = process.env.EXPO_PUBLIC_WS_URL || 'ws://3.139.201.71:8000/ws/devices';
   }
 
   connect(id_unico, token, onMessageCallback) {

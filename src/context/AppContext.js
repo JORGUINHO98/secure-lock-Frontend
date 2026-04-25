@@ -59,8 +59,17 @@ export const AppProvider = ({ children }) => {
         if (token) {
           try {
             const profileResponse = await api.get('/users/me/');
-            const freshUser = normalizeUserName(profileResponse.data);
-            setUser(freshUser);
+            const serverData = normalizeUserName(profileResponse.data);
+
+            // Combinar: si el servidor no devuelve avatar, preservamos el guardado localmente
+            const savedUser = await SecureStore.getItemAsync('userData');
+            const localUser = savedUser ? JSON.parse(savedUser) : null;
+            const finalAvatar =
+              serverData.avatar ||
+              localUser?.avatar ||
+              null;
+
+            setUser({ ...serverData, avatar: finalAvatar });
           } catch (err) {
             console.log('No se pudo refrescar el perfil del usuario:', err.message);
           }

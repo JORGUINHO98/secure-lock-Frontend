@@ -141,23 +141,28 @@ const AccountDetailsScreen = ({ navigation }) => {
       });
 
       await api.patch('/users/me/', formDataUpload, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      // Actualizar el estado global del usuario con la nueva foto
-      setUser({
-        ...user,
-        avatar: uri,
-      });
+      // Re-fetch del perfil para obtener la URL REAL del servidor
+      // (la URI local del dispositivo se invalida entre sesiones)
+      try {
+        const profileResponse = await api.get('/users/me/');
+        const data = profileResponse.data;
+        const serverAvatarUrl =
+          data.avatar || data.profile_image || data.photo || data.image || uri;
+        setUser(prev => ({ ...prev, avatar: serverAvatarUrl }));
+        console.log('[FOTO] Avatar guardado con URL del servidor:', serverAvatarUrl);
+      } catch {
+        // Si el re-fetch falla, usamos la URI local como fallback temporal
+        setUser(prev => ({ ...prev, avatar: uri }));
+        console.log('[FOTO] Re-fetch falló, usando URI local temporalmente.');
+      }
     } catch (error) {
-      console.log('Error subiendo foto:', error.message);
-      // Aunque falle el upload al backend, mantenemos la imagen localmente
-      setUser({
-        ...user,
-        avatar: uri,
-      });
+      console.log('[FOTO] Error subiendo foto al backend:', error.message);
+      Alert.alert('Advertencia', 'No se pudo subir la foto al servidor. Se mostrará localmente hasta reiniciar.');
+      // Guardar URI local como fallback
+      setUser(prev => ({ ...prev, avatar: uri }));
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -187,26 +192,53 @@ const AccountDetailsScreen = ({ navigation }) => {
 
   const handleSave = async () => {
     try {
-      // Intentar actualizar en el backend
+      // Guardar en el backend
       await api.patch('/users/me/', {
         full_name: formData.name,
         phone: formData.phone,
         location: formData.location,
       });
-    } catch (error) {
-      console.log('Error actualizando perfil en el backend:', error.message);
-    }
+      console.log('[PERFIL] Datos actualizados en el backend.');
 
-    setUser({
-      ...user,
-      name: formData.name,
-      full_name: formData.name,
-      phone: formData.phone,
-      location: formData.location,
-      // email no se modifica, se mantiene el original
-    });
-    Alert.alert(t('common.success'), t('account.update_success'));
-    navigation.goBack();
+      // Re-fetch para confirmar lo que guardó el servidor
+      const profileResponse = await api.get('/users/me/');
+      const data = profileResponse.data;
+      const serverAvatar = data.avatar || data.profile_image || data.photo || data.image || user?.avatar || null;
+
+      setUser(prev => ({
+        ...prev,
+        ...data,
+        name: data.full_name || data.name || formData.name,
+        full_name: data.full_name || formData.name,
+        avatar: serverAvatar,
+        phone: data.phone || formData.phone,
+        location: data.location || formData.location,
+      }));
+
+      Alert.alert(t('common.success'), t('account.update_success'));
+      navigation.goBack();
+    } catch (error) {
+      console.log('[PERFIL] Error actualizando:', error.response?.status, JSON.stringify(error.response?.data));
+
+      // Aunque falle el backend, actualizamos el estado local para que se vea el cambio
+      // pero avisamos al usuario
+      setUser(prev => ({
+        ...prev,
+        name: formData.name,
+        full_name: formData.name,
+        phone: formData.phone,
+        location: formData.location,
+        // preservamos el avatar actual sin sobreescribirlo
+        avatar: prev?.avatar,
+      }));
+
+      const errMsg = error.response?.data?.detail || error.response?.data?.error || 'Sin conexión con el servidor.';
+      Alert.alert(
+        'Guardado parcialmente',
+        `Los cambios se guardaron en tu dispositivo, pero no en el servidor: ${errMsg}`
+      );
+      navigation.goBack();
+    }
   };
 
   return (

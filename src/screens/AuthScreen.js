@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ImageBackground, 
-  Image, 
-  TouchableOpacity, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
   Dimensions,
   Alert,
@@ -68,49 +68,104 @@ const AuthScreen = ({ navigation }) => {
         // Login real
         await performLogin(form.email, form.password);
       } else {
-        // Registro real
+        // Validaciones locales
+        if (!form.fullName.trim()) {
+          Alert.alert('Error', 'El nombre completo es obligatorio.');
+          setIsLoading(false);
+          return;
+        }
+        if (!form.email.trim()) {
+          Alert.alert('Error', 'El correo electrónico es obligatorio.');
+          setIsLoading(false);
+          return;
+        }
+        if (form.password.length < 6) {
+          Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres.');
+          setIsLoading(false);
+          return;
+        }
         if (form.password !== form.confirmPassword) {
           Alert.alert('Error', 'Las contraseñas no coinciden.');
           setIsLoading(false);
           return;
         }
+
         // Limpiar cualquier token residual antes de registrar
         await SecureStore.deleteItemAsync('userToken');
+
+        console.log('[REGISTRO] Enviando payload:', {
+          full_name: form.fullName,
+          email: form.email,
+          password: '***',
+        });
+
         await api.post('/users/register/', {
           full_name: form.fullName,
           email: form.email,
           password: form.password,
         });
+
+        console.log('[REGISTRO] Éxito, iniciando auto-login...');
         // Auto-login después del registro exitoso
         await performLogin(form.email, form.password);
       }
       navigation.navigate('Home');
     } catch (error) {
-      const message =
-        error.response?.data?.detail ||
-        error.response?.data?.error ||
-        (error.response?.data ? JSON.stringify(error.response.data) : 'Error de conexión. Verifica tu red e inténtalo de nuevo.');
-      Alert.alert('Error', message);
+      // Log completo para debug
+      console.log('[AUTH ERROR] Status:', error.response?.status);
+      console.log('[AUTH ERROR] Data:', JSON.stringify(error.response?.data));
+      console.log('[AUTH ERROR] URL:', error.config?.url);
+
+      const data = error.response?.data;
+      let message = 'Error de conexión. Verifica tu red e inténtalo de nuevo.';
+
+      if (data) {
+        if (data.detail) {
+          message = data.detail;
+        } else if (data.error) {
+          message = data.error;
+        } else if (data.email) {
+          // Campo específico del serializador DRF
+          message = `Correo: ${Array.isArray(data.email) ? data.email[0] : data.email}`;
+        } else if (data.password) {
+          message = `Contraseña: ${Array.isArray(data.password) ? data.password[0] : data.password}`;
+        } else if (data.full_name) {
+          message = `Nombre: ${Array.isArray(data.full_name) ? data.full_name[0] : data.full_name}`;
+        } else if (data.non_field_errors) {
+          message = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+        } else {
+          // Mostrar la primera clave del objeto de error
+          const firstKey = Object.keys(data)[0];
+          if (firstKey) {
+            const val = data[firstKey];
+            message = `${firstKey}: ${Array.isArray(val) ? val[0] : val}`;
+          } else {
+            message = JSON.stringify(data);
+          }
+        }
+      }
+
+      Alert.alert('Error al registrarse', message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <ImageBackground 
-      source={require('../../assets/background.png')} 
+    <ImageBackground
+      source={require('../../assets/background.png')}
       style={styles.background}
       resizeMode="cover"
     >
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Logo and Title */}
           <View style={styles.header}>
-            <Image 
-              source={require('../../assets/logo.png')} 
+            <Image
+              source={require('../../assets/logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -122,14 +177,14 @@ const AuthScreen = ({ navigation }) => {
           <View style={styles.card}>
             {/* Tabs */}
             <View style={styles.tabContainer}>
-              <TouchableOpacity 
-                style={[styles.tab, activeTab === 'login' && styles.activeTab]} 
+              <TouchableOpacity
+                style={[styles.tab, activeTab === 'login' && styles.activeTab]}
                 onPress={() => setActiveTab('login')}
               >
                 <Text style={[styles.tabText, activeTab === 'login' && styles.activeTabText]}>{t('common.login')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.tab, activeTab === 'register' && styles.activeTab]} 
+              <TouchableOpacity
+                style={[styles.tab, activeTab === 'register' && styles.activeTab]}
                 onPress={() => setActiveTab('register')}
               >
                 <Text style={[styles.tabText, activeTab === 'register' && styles.activeTabText]}>{t('common.register')}</Text>
