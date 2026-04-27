@@ -58,31 +58,36 @@ const HomeScreen = ({ navigation }) => {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: COLORS.secondary }]}>
         <TouchableOpacity onPress={() => setMenuVisible(true)}>
-          <Menu size={32} color={COLORS.text.white} />
+          <Menu size={28} color={COLORS.text.white} />
         </TouchableOpacity>
         <Text style={[styles.welcomeText, { color: COLORS.text.white }]}>{t('home.welcome_user', { name: user?.name || user?.full_name || user?.username || user?.email?.split('@')[0] || t('common.user') })}</Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <LogOut size={28} color={COLORS.text.white} />
+          <LogOut size={24} color={COLORS.text.white} />
         </TouchableOpacity>
       </View>
 
       <ImageBackground
-        source={isDark ? null : require('../../assets/background.png')}
-        style={[styles.background, { backgroundColor: isDark ? '#1A1A1A' : COLORS.background.main }]}
+        source={require('../../assets/background.png')}
+        style={[styles.background, { backgroundColor: isDark ? '#0D1120' : COLORS.background.main }]}
         resizeMode="cover"
       >
+        {/* Dark overlay for improved text legibility */}
+        <View style={styles.backgroundOverlay} />
+
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
           <View style={styles.content}>
 
             {/* Logo and Title Section */}
             <View style={styles.heroSection}>
-              <Image
-                source={require('../../assets/logo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-              <Text style={[styles.title, { color: isDark ? COLORS.accent : COLORS.secondary }]}>{t('auth.title')}</Text>
-              <Text style={[styles.subtitle, { color: isDark ? COLORS.text.secondary : COLORS.text.main }]}>{t('home.hero_subtitle')}</Text>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require('../../assets/logo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={styles.title}>{t('auth.title')}</Text>
+              <Text style={styles.subtitle}>{t('home.hero_subtitle')}</Text>
             </View>
 
             {/* Action Cards */}
@@ -91,11 +96,13 @@ const HomeScreen = ({ navigation }) => {
                 title={t('home.scan_qr')}
                 subtitle={t('home.scan_qr_sub')}
                 icon={Smartphone}
+                variant="primary"
                 onPress={() => navigation.navigate('CameraScanner')}
               />
               <ActionCard
                 title={t('home.control_devices')}
                 icon={Shield}
+                variant="secondary"
                 onPress={() => navigation.navigate('Rooms')}
               />
             </View>
@@ -107,26 +114,38 @@ const HomeScreen = ({ navigation }) => {
       <Modal visible={menuVisible} transparent animationType="fade">
         <View style={styles.menuOverlay}>
           <TouchableOpacity style={styles.menuCloseArea} onPress={() => setMenuVisible(false)} />
-          <View style={[styles.menuContent, { backgroundColor: isDark ? COLORS.secondary : COLORS.background.surface }]}>
+          <View style={[styles.menuContent, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
             <View style={styles.menuHeader}>
               <Text style={[styles.menuTitle, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Menú</Text>
-              <TouchableOpacity onPress={() => setMenuVisible(false)}>
-                <X size={32} color={isDark ? COLORS.text.white : COLORS.text.main} />
+              <TouchableOpacity onPress={() => setMenuVisible(false)} style={styles.menuCloseBtn}>
+                <X size={24} color={isDark ? COLORS.text.white : COLORS.text.main} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.menuItems}>
-              <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); Alert.alert("Premium", "Redirigiendo..."); }}>
-                <CreditCard size={24} color={COLORS.primary} />
+              <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); navigation.navigate('Premium'); }}>
+                <View style={[styles.menuIconCircle, { backgroundColor: 'rgba(0, 106, 255, 0.1)' }]}>
+                  <CreditCard size={20} color={COLORS.primary} />
+                </View>
                 <Text style={[styles.menuItemText, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Adquirir Plan Premium</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); navigation.navigate('Account'); }}>
-                <User size={24} color={COLORS.primary} />
+                <View style={[styles.menuIconCircle, { backgroundColor: 'rgba(0, 106, 255, 0.1)' }]}>
+                  <User size={20} color={COLORS.primary} />
+                </View>
                 <Text style={[styles.menuItemText, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Cuenta del Usuario</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); handleLogout(); }}>
-                <LogOut size={24} color={COLORS.status.locked} />
-                <Text style={[styles.menuItemText, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Cerrar Sesión</Text>
+              <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); navigation.navigate('Settings'); }}>
+                <View style={[styles.menuIconCircle, { backgroundColor: 'rgba(0, 106, 255, 0.1)' }]}>
+                  <Settings size={20} color={COLORS.primary} />
+                </View>
+                <Text style={[styles.menuItemText, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Configuración</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={() => { setMenuVisible(false); handleLogout(); }}>
+                <View style={[styles.menuIconCircle, { backgroundColor: 'rgba(255, 59, 48, 0.1)' }]}>
+                  <LogOut size={20} color={COLORS.status.locked} />
+                </View>
+                <Text style={[styles.menuItemText, { color: COLORS.status.locked }]}>Cerrar Sesión</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -134,18 +153,18 @@ const HomeScreen = ({ navigation }) => {
       </Modal>
 
       {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { backgroundColor: COLORS.background.surface }]}>
+      <View style={[styles.bottomNav, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
         <TouchableOpacity style={styles.navItem}>
           <Home size={28} color={COLORS.primary} />
           <Text style={[styles.navText, { color: COLORS.primary }]}>{t('common.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
-          <Users size={28} color={COLORS.secondary} />
-          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.rooms')}</Text>
+          <Users size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
+          <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>{t('common.rooms')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
-          <User size={28} color={COLORS.secondary} />
-          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.account')}</Text>
+          <User size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
+          <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>{t('common.account')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -167,64 +186,75 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.secondary,
   },
   welcomeText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 17,
+    fontWeight: '700',
     textAlign: 'center',
     flex: 1,
+    marginHorizontal: SPACING.sm,
   },
   logoutButton: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    padding: 8,
-    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    padding: 10,
+    borderRadius: 22,
   },
   background: {
     flex: 1,
   },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(26, 31, 54, 0.55)',
+  },
   content: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
-    paddingTop: SPACING.md,
-  },
-  themeToggle: {
-    alignSelf: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    padding: 8,
-    borderRadius: 20,
-    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xl,
   },
   heroSection: {
     alignItems: 'center',
-    marginBottom: SPACING.xxl,
+    marginBottom: SPACING.xl,
+  },
+  logoContainer: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   logo: {
-    width: 140,
-    height: 140,
-    marginBottom: SPACING.md,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
   },
   title: {
-    fontSize: 42,
+    fontSize: 38,
     fontWeight: '800',
-    color: COLORS.secondary,
-    letterSpacing: 3.5,
-    textTransform: 'capitalize',
+    color: '#FFFFFF',
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#000',
-    marginTop: 4,
-    fontWeight: '600',
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: SPACING.sm,
+    fontWeight: '500',
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   actionContainer: {
     width: '100%',
-    paddingTop: SPACING.lg,
+    paddingTop: SPACING.md,
   },
   bottomNav: {
     flexDirection: 'row',
     height: 90,
-    backgroundColor: COLORS.background.surface,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.06)',
     justifyContent: 'space-around',
@@ -246,28 +276,38 @@ const styles = StyleSheet.create({
   },
   menuOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     flexDirection: 'row',
   },
   menuCloseArea: {
     flex: 1,
   },
   menuContent: {
-    width: width * 0.75,
+    width: width * 0.78,
     height: '100%',
     padding: SPACING.lg,
-    paddingTop: 50,
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
+    paddingTop: 60,
+    borderTopLeftRadius: 24,
+    borderBottomLeftRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: -4, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 10,
   },
   menuHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: SPACING.xl,
+  },
+  menuCloseBtn: {
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    padding: 8,
+    borderRadius: 20,
   },
   menuTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
   },
   menuItems: {
@@ -276,14 +316,21 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    borderBottomColor: 'rgba(0,0,0,0.06)',
+  },
+  menuIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   menuItemText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    marginLeft: 15,
+    marginLeft: SPACING.md,
   }
 });
 
