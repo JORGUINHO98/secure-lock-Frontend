@@ -65,30 +65,30 @@ const QRCodeScreen = ({ route, navigation }) => {
   }, []);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
+      <StatusBar barStyle="light-content" />
       
       {/* Header immersive */}
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={32} color={isDark ? '#FFF' : '#1E234C'} />
+          <Undo2 size={32} color={COLORS.text.white} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>QR de Sala</Text>
+        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>QR de Sala</Text>
         <View style={{ width: 32 }} />
       </View>
 
-      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
             <View style={styles.content}>
 
             {/* Success/Check Icon (Slightly smaller) */}
             <View style={styles.iconContainer}>
-                <CheckCircle2 size={100} color={isDark ? '#4FB3C3' : '#1E234C'} strokeWidth={1.5} />
+                <CheckCircle2 size={100} color={isDark ? COLORS.accent : COLORS.secondary} strokeWidth={1.5} />
             </View>
 
             {/* Title and Subtitle */}
-            <Text style={[styles.title, { color: isDark ? '#FFF' : '#1E234C' }]}>CONTROL DE DISPOSITIVO</Text>
-            <Text style={[styles.subtitle, { color: isDark ? '#BBB' : '#666' }]}>
+            <Text style={[styles.title, { color: isDark ? COLORS.text.white : COLORS.secondary }]}>CONTROL DE DISPOSITIVO</Text>
+            <Text style={[styles.subtitle, { color: isDark ? COLORS.text.secondary : COLORS.text.secondary }]}>
                 Escanea este código desde el dispositivo que deseas controlar
             </Text>
 
@@ -107,13 +107,13 @@ const QRCodeScreen = ({ route, navigation }) => {
             </View>
 
             {/* Device ID Display */}
-            <View style={[styles.idContainer, { backgroundColor: isDark ? '#333' : '#F5F5F5' }]}>
-                <Text style={[styles.idLabel, { color: isDark ? '#AAA' : '#888' }]}>ID del Dispositivo</Text>
-                <Text style={[styles.idValue, { color: isDark ? '#FFF' : '#000' }]}>{qrCodeData}</Text>
+            <View style={[styles.idContainer, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.offWhite }]}>
+                <Text style={[styles.idLabel, { color: COLORS.text.secondary }]}>ID del Dispositivo</Text>
+                <Text style={[styles.idValue, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>{qrCodeData}</Text>
             </View>
 
             {/* Generate New Button */}
-            <TouchableOpacity style={[styles.generateButton, { backgroundColor: isDark ? '#4FB3C3' : '#6C5CE7' }]} onPress={generateNewId}>
+            <TouchableOpacity style={[styles.generateButton, { backgroundColor: isDark ? COLORS.accent : COLORS.primary }]} onPress={generateNewId}>
                 <Text style={styles.generateButtonText}>Generar Nuevo QR</Text>
             </TouchableOpacity>
             </View>
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#6C5CE7',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

@@ -52,23 +52,23 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: COLORS.secondary }]}>
+      <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
+      <View style={[styles.header, { backgroundColor: COLORS.secondary }]}>
         <TouchableOpacity onPress={() => setMenuVisible(true)}>
-          <Menu size={32} color={isDark ? '#FFF' : '#1E234C'} />
+          <Menu size={32} color={COLORS.text.white} />
         </TouchableOpacity>
-        <Text style={[styles.welcomeText, { color: isDark ? '#FFF' : '#000' }]}>{t('home.welcome_user', { name: user?.name || user?.full_name || user?.username || user?.email?.split('@')[0] || t('common.user') })}</Text>
+        <Text style={[styles.welcomeText, { color: COLORS.text.white }]}>{t('home.welcome_user', { name: user?.name || user?.full_name || user?.username || user?.email?.split('@')[0] || t('common.user') })}</Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <LogOut size={28} color="#FFFFFF" />
+          <LogOut size={28} color={COLORS.text.white} />
         </TouchableOpacity>
       </View>
 
       <ImageBackground
         source={isDark ? null : require('../../assets/background.png')}
-        style={[styles.background, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}
+        style={[styles.background, { backgroundColor: isDark ? '#1A1A1A' : COLORS.background.main }]}
         resizeMode="cover"
       >
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
@@ -81,8 +81,8 @@ const HomeScreen = ({ navigation }) => {
                 style={styles.logo}
                 resizeMode="contain"
               />
-              <Text style={[styles.title, { color: isDark ? '#4FB3C3' : '#1E234C' }]}>{t('auth.title')}</Text>
-              <Text style={[styles.subtitle, { color: isDark ? '#BBB' : '#000' }]}>{t('home.hero_subtitle')}</Text>
+              <Text style={[styles.title, { color: isDark ? COLORS.accent : COLORS.secondary }]}>{t('auth.title')}</Text>
+              <Text style={[styles.subtitle, { color: isDark ? COLORS.text.secondary : COLORS.text.main }]}>{t('home.hero_subtitle')}</Text>
             </View>
 
             {/* Action Cards */}
@@ -91,13 +91,11 @@ const HomeScreen = ({ navigation }) => {
                 title={t('home.scan_qr')}
                 subtitle={t('home.scan_qr_sub')}
                 icon={Smartphone}
-                backgroundColor={COLORS.green}
                 onPress={() => navigation.navigate('CameraScanner')}
               />
               <ActionCard
                 title={t('home.control_devices')}
                 icon={Shield}
-                backgroundColor={COLORS.red}
                 onPress={() => navigation.navigate('Rooms')}
               />
             </View>
@@ -109,26 +107,26 @@ const HomeScreen = ({ navigation }) => {
       <Modal visible={menuVisible} transparent animationType="fade">
         <View style={styles.menuOverlay}>
           <TouchableOpacity style={styles.menuCloseArea} onPress={() => setMenuVisible(false)} />
-          <View style={[styles.menuContent, { backgroundColor: isDark ? '#2D2D2D' : '#FFF' }]}>
+          <View style={[styles.menuContent, { backgroundColor: isDark ? COLORS.secondary : COLORS.background.surface }]}>
             <View style={styles.menuHeader}>
-              <Text style={[styles.menuTitle, { color: isDark ? '#FFF' : '#000' }]}>Menú</Text>
+              <Text style={[styles.menuTitle, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Menú</Text>
               <TouchableOpacity onPress={() => setMenuVisible(false)}>
-                <X size={32} color={isDark ? '#FFF' : '#000'} />
+                <X size={32} color={isDark ? COLORS.text.white : COLORS.text.main} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.menuItems}>
               <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); Alert.alert("Premium", "Redirigiendo..."); }}>
-                <CreditCard size={24} color="#6C5CE7" />
-                <Text style={[styles.menuItemText, { color: isDark ? '#FFF' : '#000' }]}>Adquirir Plan Premium</Text>
+                <CreditCard size={24} color={COLORS.primary} />
+                <Text style={[styles.menuItemText, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Adquirir Plan Premium</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); navigation.navigate('Account'); }}>
-                <User size={24} color="#6C5CE7" />
-                <Text style={[styles.menuItemText, { color: isDark ? '#FFF' : '#000' }]}>Cuenta del Usuario</Text>
+                <User size={24} color={COLORS.primary} />
+                <Text style={[styles.menuItemText, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Cuenta del Usuario</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); handleLogout(); }}>
-                <LogOut size={24} color="#FF4757" />
-                <Text style={[styles.menuItemText, { color: isDark ? '#FFF' : '#000' }]}>Cerrar Sesión</Text>
+                <LogOut size={24} color={COLORS.status.locked} />
+                <Text style={[styles.menuItemText, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Cerrar Sesión</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -136,18 +134,18 @@ const HomeScreen = ({ navigation }) => {
       </Modal>
 
       {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#C5C5C5' }]}>
+      <View style={[styles.bottomNav, { backgroundColor: COLORS.background.surface }]}>
         <TouchableOpacity style={styles.navItem}>
-          <Home size={32} color={isDark ? '#4FB3C3' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#4FB3C3' : '#000' }]}>{t('common.home')}</Text>
+          <Home size={28} color={COLORS.primary} />
+          <Text style={[styles.navText, { color: COLORS.primary }]}>{t('common.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
-          <Users size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.rooms')}</Text>
+          <Users size={28} color={COLORS.secondary} />
+          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.rooms')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
-          <User size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.account')}</Text>
+          <User size={28} color={COLORS.secondary} />
+          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.account')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -158,7 +156,7 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
-    backgroundColor: '#A8C3C0', // Header area color as in image
+    backgroundColor: COLORS.secondary,
   },
   header: {
     flexDirection: 'row',
@@ -166,7 +164,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
-    backgroundColor: '#A8C3C0',
+    backgroundColor: COLORS.secondary,
   },
   welcomeText: {
     fontSize: 18,
@@ -176,8 +174,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoutButton: {
-    backgroundColor: '#1E234C', // Dark blue circular background
-    padding: 6,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    padding: 8,
     borderRadius: 20,
   },
   background: {
@@ -206,10 +204,11 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   title: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: '800',
-    color: '#1E234C',
-    letterSpacing: 2,
+    color: COLORS.secondary,
+    letterSpacing: 3.5,
+    textTransform: 'capitalize',
   },
   subtitle: {
     fontSize: 14,
@@ -224,20 +223,25 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: 'row',
-    height: 80,
-    backgroundColor: '#C5C5C5', // Greyish bottom nav as in image
+    height: 90,
+    backgroundColor: COLORS.background.surface,
     borderTopWidth: 1,
-    borderTopColor: '#AAA',
+    borderTopColor: 'rgba(0,0,0,0.06)',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingBottom: 10,
+    paddingBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 3,
   },
   navItem: {
     alignItems: 'center',
   },
   navText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
     marginTop: 4,
   },
   menuOverlay: {
@@ -251,8 +255,10 @@ const styles = StyleSheet.create({
   menuContent: {
     width: width * 0.75,
     height: '100%',
-    padding: 20,
+    padding: SPACING.lg,
     paddingTop: 50,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
   },
   menuHeader: {
     flexDirection: 'row',

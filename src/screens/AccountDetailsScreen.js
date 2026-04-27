@@ -18,6 +18,7 @@ import {
 import { ChevronLeft, User, Mail, Phone, MapPin, Save, Camera } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
+import { COLORS, SPACING } from '../theme/colors';
 import api from '../services/api';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -26,15 +27,15 @@ const { width } = Dimensions.get('window');
 // InputField definido FUERA del componente para evitar que el teclado se cierre al escribir
 const InputField = ({ icon: Icon, label, value, onChangeText, keyboardType = 'default', editable = true, isDark = false }) => (
   <View style={styles.inputContainer}>
-    <Text style={[styles.label, { color: isDark ? '#AAA' : '#666' }]}>{label}</Text>
-    <View style={[styles.inputWrapper, { backgroundColor: isDark ? (editable ? '#333' : '#2A2A2A') : (editable ? '#F5F5F5' : '#E8E8E8') }]}>
-      <Icon size={20} color={editable ? (isDark ? '#FFF' : '#333') : (isDark ? '#666' : '#999')} style={styles.inputIcon} />
+    <Text style={[styles.label, { color: isDark ? COLORS.text.secondary : COLORS.text.secondary }]}>{label}</Text>
+    <View style={[styles.inputWrapper, { backgroundColor: isDark ? (editable ? '#2A2F45' : '#1E2338') : (editable ? COLORS.background.offWhite : '#EAEEF3') }]}>
+      <Icon size={20} color={editable ? COLORS.primary : COLORS.text.secondary} style={styles.inputIcon} />
       <TextInput
-        style={[styles.input, { color: isDark ? (editable ? '#FFF' : '#888') : (editable ? '#000' : '#888') }]}
+        style={[styles.input, { color: isDark ? (editable ? COLORS.text.white : COLORS.text.secondary) : (editable ? COLORS.text.main : COLORS.text.secondary) }]}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
-        placeholderTextColor={isDark ? '#666' : '#999'}
+        placeholderTextColor={COLORS.text.secondary}
         editable={editable}
       />
     </View>
@@ -242,18 +243,18 @@ const AccountDetailsScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
+      <StatusBar barStyle="light-content" />
 
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeft size={32} color={isDark ? '#FFF' : '#1E234C'} />
+          <ChevronLeft size={32} color={COLORS.text.white} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>{t('account.personal_data')}</Text>
+        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>{t('account.personal_data')}</Text>
         <View style={{ width: 32 }} />
       </View>
 
-      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
@@ -261,7 +262,7 @@ const AccountDetailsScreen = ({ navigation }) => {
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <View style={styles.avatarContainer}>
               <TouchableOpacity onPress={handleChangePhoto} activeOpacity={0.7}>
-                <View style={[styles.avatar, { backgroundColor: '#6C5CE7' }]}>
+                <View style={[styles.avatar, { backgroundColor: COLORS.primary }]}>
                   {avatarUri ? (
                     <Image
                       source={{ uri: avatarUri }}
@@ -396,7 +397,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   changeAvatarText: {
-    color: '#6C5CE7',
+    color: COLORS.primary,
     fontWeight: '600',
     fontSize: 16,
   },
@@ -432,14 +433,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   saveButton: {
-    backgroundColor: '#6C5CE7',
+    backgroundColor: COLORS.primary,
     flexDirection: 'row',
     height: 60,
-    borderRadius: 15,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,
-    shadowColor: '#6C5CE7',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,

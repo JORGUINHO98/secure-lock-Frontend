@@ -128,25 +128,25 @@ const PremiumScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
+      <StatusBar barStyle="light-content" />
 
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>Plan Premium</Text>
-        <TouchableOpacity onPress={handleClose} style={[styles.closeButton, { backgroundColor: isDark ? '#333' : 'rgba(255,255,255,0.3)' }]}>
-          <X size={24} color={isDark ? '#FFF' : '#1E234C'} />
+      <View style={[styles.header, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
+        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>Plan Premium</Text>
+        <TouchableOpacity onPress={handleClose} style={[styles.closeButton, { backgroundColor: isDark ? '#2A2F45' : 'rgba(255,255,255,0.2)' }]}>
+          <X size={24} color={COLORS.text.white} />
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.main }]}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {isPremium ? (
             <View style={styles.premiumSuccess}>
               <View style={styles.starContainer}>
                 <Star size={80} color="#FFD700" fill="#FFD700" />
               </View>
-              <Text style={[styles.mainTitle, { color: isDark ? '#FFF' : '#000' }]}>¡Ya eres Premium!</Text>
-              <Text style={[styles.subTitle, { color: isDark ? '#AAA' : '#666' }]}>
+              <Text style={[styles.mainTitle, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>¡Ya eres Premium!</Text>
+              <Text style={[styles.subTitle, { color: COLORS.text.secondary }]}>
                 Gracias por tu apoyo. Disfruta de acceso ilimitado a todas las funciones.
               </Text>
               <TouchableOpacity style={styles.primaryButton} onPress={handleClose}>
@@ -160,15 +160,15 @@ const PremiumScreen = ({ navigation }) => {
                 <Text style={styles.badgeText}>OFERTA LIMITADA</Text>
               </View>
 
-              <Text style={[styles.mainTitle, { color: isDark ? '#FFF' : '#000' }]}>
+              <Text style={[styles.mainTitle, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>
                 Desbloquea todo el potencial de Secure Lock
               </Text>
 
-              <Text style={[styles.subTitle, { color: isDark ? '#AAA' : '#666' }]}>
+              <Text style={[styles.subTitle, { color: COLORS.text.secondary }]}>
                 Control total de tus dispositivos sin anuncios y sin límites.
               </Text>
 
-              <View style={[styles.card, { backgroundColor: isDark ? '#2D2D2D' : '#FFF' }]}>
+              <View style={[styles.card, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.surface }]}>
                 <FeatureItem text="Salas ilimitadas" />
                 <FeatureItem text="Dispositivos ilimitados por sala" />
                 <FeatureItem text="Sin anuncios molestos" />
@@ -177,8 +177,8 @@ const PremiumScreen = ({ navigation }) => {
               </View>
 
               <View style={styles.priceSection}>
-                <Text style={[styles.priceTag, { color: isDark ? '#FFF' : '#000' }]}>$ 13.99</Text>
-                <Text style={[styles.priceInfo, { color: isDark ? '#AAA' : '#666' }]}>Un solo pago para siempre</Text>
+                <Text style={[styles.priceTag, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>$ 13.99</Text>
+                <Text style={[styles.priceInfo, { color: COLORS.text.secondary }]}>Un solo pago para siempre</Text>
               </View>
 
               <TouchableOpacity style={styles.primaryButton} onPress={() => setShowPayment(true)}>
@@ -189,9 +189,9 @@ const PremiumScreen = ({ navigation }) => {
             </View>
           ) : (
             <View style={styles.paymentContainer}>
-              <View style={[styles.googlePlayCard, { backgroundColor: isDark ? '#2D2D2D' : '#FFF' }]}>
+              <View style={[styles.googlePlayCard, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.surface }]}>
                 <View style={styles.gpHeader}>
-                  <Text style={[styles.gpTitle, { color: isDark ? '#FFF' : '#000' }]}>Google Play</Text>
+                  <Text style={[styles.gpTitle, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Google Play</Text>
                 </View>
 
                 <View style={styles.appRow}>
@@ -199,7 +199,7 @@ const PremiumScreen = ({ navigation }) => {
                     <ShieldCheck size={30} color="#FFF" />
                   </View>
                   <View>
-                    <Text style={[styles.appName, { color: isDark ? '#FFF' : '#000' }]}>SECURE LOCK Premium</Text>
+                    <Text style={[styles.appName, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>SECURE LOCK Premium</Text>
                     <Text style={styles.appSub}>Versión Completa</Text>
                   </View>
                 </View>
@@ -207,9 +207,9 @@ const PremiumScreen = ({ navigation }) => {
                 <View style={styles.divider} />
 
                 <View style={styles.paymentRow}>
-                  <Text style={[styles.paymentLabel, { color: isDark ? '#FFF' : '#000' }]}>Precio total</Text>
+                  <Text style={[styles.paymentLabel, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Precio total</Text>
                   <View style={{ alignItems: 'flex-end' }}>
-                    <Text style={[styles.paymentValue, { color: isDark ? '#FFF' : '#000' }]}>$ 13.99</Text>
+                    <Text style={[styles.paymentValue, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>$ 13.99</Text>
                     <Text style={styles.taxLabel}>+ impuestos aplicables</Text>
                   </View>
                 </View>
@@ -218,8 +218,8 @@ const PremiumScreen = ({ navigation }) => {
                   style={[styles.methodRow, { backgroundColor: isDark ? '#3D3D3D' : '#F5F5F5' }]}
                   onPress={() => setIsPaymentModalVisible(true)}
                 >
-                  <CreditCard size={20} color="#6C5CE7" />
-                  <Text style={[styles.methodText, { color: isDark ? '#FFF' : '#000' }]}>Agregar tarjeta de crédito</Text>
+                  <CreditCard size={20} color={COLORS.primary} />
+                  <Text style={[styles.methodText, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Agregar tarjeta de crédito</Text>
                   <Text style={styles.arrow}>{'>'}</Text>
                 </TouchableOpacity>
 
@@ -246,18 +246,18 @@ const PremiumScreen = ({ navigation }) => {
 
       {/* Bottom Nav */}
       {!showPayment && (
-        <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#FFF' }]}>
+      <View style={[styles.bottomNav, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
           <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-            <Home size={24} color={isDark ? '#AAA' : '#666'} />
-            <Text style={[styles.navText, { color: isDark ? '#AAA' : '#666' }]}>Inicio</Text>
+            <Home size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
+            <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>Inicio</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
-            <Users size={24} color={isDark ? '#AAA' : '#666'} />
-            <Text style={[styles.navText, { color: isDark ? '#AAA' : '#666' }]}>Salas</Text>
+            <Users size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
+            <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>Salas</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
-            <User size={24} color={isDark ? '#AAA' : '#666'} />
-            <Text style={[styles.navText, { color: isDark ? '#AAA' : '#666' }]}>Cuenta</Text>
+            <User size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
+            <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>Cuenta</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   },
   offerContainer: { alignItems: 'center', marginTop: 20 },
   badge: {
-    flexDirection: 'row', backgroundColor: '#6C5CE7',
+    flexDirection: 'row', backgroundColor: COLORS.primary,
     paddingHorizontal: 12, paddingVertical: 6,
     borderRadius: 20, alignItems: 'center', marginBottom: 20,
   },
@@ -441,9 +441,9 @@ const styles = StyleSheet.create({
   priceTag: { fontSize: 42, fontWeight: 'bold' },
   priceInfo: { fontSize: 14, marginTop: 5 },
   primaryButton: {
-    backgroundColor: '#6C5CE7', width: '100%', height: 60,
-    borderRadius: 15, justifyContent: 'center', alignItems: 'center',
-    shadowColor: '#6C5CE7', shadowOffset: { width: 0, height: 5 },
+    backgroundColor: COLORS.primary, width: '100%', height: 60,
+    borderRadius: 16, justifyContent: 'center', alignItems: 'center',
+    shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3, shadowRadius: 8, elevation: 8,
   },
   buttonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
   gpTitle: { fontSize: 20, fontWeight: 'bold' },
   appRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 25 },
   appIcon: {
-    width: 60, height: 60, backgroundColor: '#6C5CE7',
+    width: 60, height: 60, backgroundColor: COLORS.primary,
     borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginRight: 15,
   },
   appName: { fontSize: 18, fontWeight: 'bold' },
@@ -487,11 +487,12 @@ const styles = StyleSheet.create({
   },
   subscribeText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
   bottomNav: {
-    flexDirection: 'row', height: 80, justifyContent: 'space-around',
-    alignItems: 'center', borderTopWidth: 1, borderTopColor: '#EEE', paddingBottom: 15,
+    flexDirection: 'row', height: 90, justifyContent: 'space-around',
+    alignItems: 'center', borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.06)', paddingBottom: 16,
+    shadowColor: '#000', shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.06, shadowRadius: 4, elevation: 3,
   },
   navItem: { alignItems: 'center' },
-  navText: { fontSize: 10, fontWeight: '600', marginTop: 4 },
+  navText: { fontSize: 12, fontWeight: '600', marginTop: 4 },
 
   // --- Modal styles ---
   modalOverlay: {

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "proyectoFront",
-    "slug": "proyectoFront",
+    "name": "SecureLock",
+    "slug": "SecureLock",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",

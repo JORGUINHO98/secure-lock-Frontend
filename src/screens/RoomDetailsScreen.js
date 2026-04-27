@@ -87,55 +87,55 @@ const RoomDetailsScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: COLORS.secondary }]}>
+      <StatusBar barStyle="light-content" />
       
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
+      <View style={[styles.header, { backgroundColor: COLORS.secondary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={40} color={isDark ? '#FFF' : '#1E234C'} />
+          <Undo2 size={40} color={COLORS.text.white} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>{roomName}</Text>
+        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>{roomName}</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
-      <ScrollView style={[styles.content, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: COLORS.background.main }]}>
+      <ScrollView style={[styles.content, { backgroundColor: COLORS.background.main }]}>
         {devices.map((device) => (
-          <View key={device.id} style={[styles.deviceCard, { backgroundColor: isDark ? '#333' : '#D9D9D9' }]}>
+          <View key={device.id} style={[styles.deviceCard, { backgroundColor: COLORS.background.surface }]}>
             <View style={styles.deviceIconBox}>
                 {device.name.toLowerCase().includes('tablet') ? (
-                    <Tablet size={60} color={isDark ? '#4FB3C3' : '#000'} />
+                    <Tablet size={60} color={COLORS.primary} />
                 ) : (
-                    <Smartphone size={60} color={isDark ? '#4FB3C3' : '#000'} />
+                    <Smartphone size={60} color={COLORS.primary} />
                 )}
             </View>
             <View style={styles.deviceInfo}>
               <View style={styles.deviceHeaderRow}>
-                <Text style={[styles.deviceName, { color: isDark ? '#FFF' : '#000' }]}>{device.name}</Text>
+                <Text style={[styles.deviceName, { color: COLORS.text.main }]}>{device.name}</Text>
                 <View style={styles.deviceActions}>
                     <TouchableOpacity onPress={() => handleEditDevice(device)}>
-                        <Pencil size={20} color="#6699CC" />
+                        <Pencil size={20} color={COLORS.primary} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleDeleteDevice(device.id)} style={{marginLeft: 15}}>
-                        <Trash2 size={20} color="#FF4757" />
+                        <Trash2 size={20} color={COLORS.status.locked} />
                     </TouchableOpacity>
                 </View>
               </View>
               <View style={styles.statusRow}>
                 {device.status === 'Activo' || device.status === 'Desbloqueado' ? (
                     <View style={styles.statusBadge}>
-                        <CheckCircle2 size={24} color={COLORS.green} />
-                        <Text style={[styles.statusText, { color: COLORS.green }]}>{t('roomDetails.active') || "Activo"}</Text>
+                        <CheckCircle2 size={24} color={COLORS.status.unlocked} />
+                        <Text style={[styles.statusText, { color: COLORS.status.unlocked }]}>{t('roomDetails.active') || "Activo"}</Text>
                     </View>
                 ) : (
                     <View style={styles.statusBadge}>
-                        <XCircle size={24} color={COLORS.red} />
-                        <Text style={[styles.statusText, { color: COLORS.red }]}>{t('roomDetails.locked') || "Bloqueado"}</Text>
+                        <XCircle size={24} color={COLORS.status.locked} />
+                        <Text style={[styles.statusText, { color: COLORS.status.locked }]}>{t('roomDetails.locked') || "Bloqueado"}</Text>
                     </View>
                 )}
                 <TouchableOpacity onPress={() => navigation.navigate('DeviceControl', { roomId, deviceId: device.id, roomName })}>
-                    <Text style={styles.verMasText}>{t('common.viewMore')}</Text>
+                    <Text style={[styles.verMasText, { color: COLORS.primary }]}>{t('common.viewMore')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -146,47 +146,47 @@ const RoomDetailsScreen = ({ route, navigation }) => {
       </View>
 
       {/* Action Buttons */}
-      <View style={{ paddingHorizontal: 20, paddingBottom: 10, backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }}>
+      <View style={{ paddingHorizontal: 20, paddingBottom: 10, backgroundColor: COLORS.background.main }}>
           {/* Block All Button */}
           {devices.length > 0 && (
-            <TouchableOpacity style={styles.blockAllButton} onPress={handleBlockAllRoom}>
-              <Lock size={24} color="#FFF" />
-              <Text style={styles.blockAllButtonText}>{t('roomDetails.block_all_room') || "Bloquear Sala Completa"}</Text>
+            <TouchableOpacity style={[styles.blockAllButton, { backgroundColor: COLORS.status.locked }]} onPress={handleBlockAllRoom}>
+              <Lock size={24} color={COLORS.text.white} />
+              <Text style={[styles.blockAllButtonText, { color: COLORS.text.white }]}>{t('roomDetails.block_all_room') || "Bloquear Sala Completa"}</Text>
             </TouchableOpacity>
           )}
 
           {/* Show QR Button */}
-          <TouchableOpacity style={[styles.showQrButton, { backgroundColor: isDark ? '#4FB3C3' : '#4FB3C3' }]} onPress={() => navigation.navigate('QRCode', { roomId, roomName })}>
-            <QrCode size={24} color="#FFF" />
-            <Text style={styles.showQrButtonText}>{t('roomDetails.show_qr') || "Mostrar QR de la Sala"}</Text>
+          <TouchableOpacity style={[styles.showQrButton, { backgroundColor: COLORS.primary }]} onPress={() => navigation.navigate('QRCode', { roomId, roomName })}>
+            <QrCode size={24} color={COLORS.text.white} />
+            <Text style={[styles.showQrButtonText, { color: COLORS.text.white }]}>{t('roomDetails.show_qr') || "Mostrar QR de la Sala"}</Text>
           </TouchableOpacity>
       </View>
 
       {/* Edit Modal */}
       <Modal visible={editModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: isDark ? '#2D2D2D' : '#D9D9D9' }]}>
-            <Text style={[styles.modalTitle, { color: isDark ? '#FFF' : '#000' }]}>{t('roomDetails.edit_device') || "Editar Dispositivo"}</Text>
+          <View style={[styles.modalContent, { backgroundColor: COLORS.background.surface }]}>
+            <Text style={[styles.modalTitle, { color: COLORS.text.main }]}>{t('roomDetails.edit_device') || "Editar Dispositivo"}</Text>
             <TextInput
-              style={[styles.modalInput, { color: isDark ? '#FFF' : '#000', borderBottomColor: isDark ? '#4FB3C3' : '#6C5CE7' }]}
+              style={[styles.modalInput, { color: COLORS.text.main, borderBottomColor: COLORS.primary }]}
               value={deviceNameInput}
               onChangeText={setDeviceNameInput}
               placeholder={t('roomDetails.device_name_placeholder') || "Nombre del dispositivo..."}
-              placeholderTextColor="#888"
+              placeholderTextColor={COLORS.text.secondary}
               autoFocus
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity 
-                style={[styles.modalButton, styles.cancelButton]} 
+                style={[styles.modalButton, { backgroundColor: COLORS.status.locked }]} 
                 onPress={() => setEditModalVisible(false)}
               >
-                <Text style={styles.buttonText}>{t('common.cancel')}</Text>
+                <Text style={[styles.buttonText, { color: COLORS.text.white }]}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.modalButton, styles.confirmButton]} 
+                style={[styles.modalButton, { backgroundColor: COLORS.primary }]} 
                 onPress={handleUpdateDevice}
               >
-                <Text style={[styles.buttonText, { color: '#FFF' }]}>{t('common.save')}</Text>
+                <Text style={[styles.buttonText, { color: COLORS.text.white }]}>{t('common.save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -195,18 +195,18 @@ const RoomDetailsScreen = ({ route, navigation }) => {
 
 
       {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#B0B0B0' }]}>
+      <View style={[styles.bottomNav, { backgroundColor: COLORS.background.surface }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Home size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.home')}</Text>
+          <Home size={28} color={COLORS.secondary} />
+          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.home')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
-          <Users size={32} color={isDark ? '#4FB3C3' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#4FB3C3' : '#000' }]}>{t('common.rooms')}</Text>
+        <TouchableOpacity style={styles.navItem} activeOpacity={1}>
+          <Users size={28} color={COLORS.primary} />
+          <Text style={[styles.navText, { color: COLORS.primary }]}>{t('common.rooms')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
-          <User size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.account')}</Text>
+          <User size={28} color={COLORS.secondary} />
+          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.account')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -298,7 +298,6 @@ const styles = StyleSheet.create({
   },
   verMasText: {
     fontSize: 16,
-    color: '#6699CC',
     fontWeight: '600',
   },
   emptySpace: {
@@ -306,51 +305,61 @@ const styles = StyleSheet.create({
     backgroundColor: '#A0A0A0',
   },
   blockAllButton: {
-    backgroundColor: COLORS.red,
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
     elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   blockAllButtonText: {
-    color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
   },
   showQrButton: {
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
   showQrButtonText: {
-    color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
   },
   bottomNav: {
     flexDirection: 'row',
-    height: 100,
-    backgroundColor: '#B0B0B0',
+    height: 90,
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingBottom: 20,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 3,
   },
   navItem: {
     alignItems: 'center',
   },
   navText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: '600',
     marginTop: 4,
-    color: '#000',
   },
   modalOverlay: {
     flex: 1,
@@ -359,25 +368,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#D9D9D9',
+    backgroundColor: COLORS.background.surface,
     width: '90%',
     padding: 20,
-    borderRadius: 0,
+    borderRadius: 20,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
-    color: '#000',
+    color: COLORS.text.main,
   },
   modalInput: {
     borderBottomWidth: 2,
-    borderBottomColor: '#6C5CE7',
+    borderBottomColor: COLORS.primary,
     fontSize: 18,
     paddingVertical: 10,
     marginBottom: 30,
-    color: '#000',
+    color: COLORS.text.main,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -386,20 +395,22 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 0,
+    borderRadius: 8,
     alignItems: 'center',
     marginHorizontal: 5,
   },
   cancelButton: {
-    backgroundColor: '#C84343',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: COLORS.status.locked,
   },
   confirmButton: {
-    backgroundColor: '#3E76C5',
+    backgroundColor: COLORS.primary,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: COLORS.text.white,
   }
 });
 

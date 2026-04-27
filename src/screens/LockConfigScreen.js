@@ -9,7 +9,7 @@ import { Platform, View,
   Switch } from 'react-native';
 import { Undo2, Moon, BookOpen, Settings, Calendar, Home, Users, User } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
-import { COLORS } from '../theme/colors';
+import { COLORS, SPACING } from '../theme/colors';
 
 const LockConfigScreen = ({ route, navigation }) => {
   const { roomId, deviceId } = route.params;
@@ -29,35 +29,35 @@ const LockConfigScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
+      <StatusBar barStyle="light-content" />
       
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={40} color={isDark ? '#FFF' : '#1E234C'} />
+          <Undo2 size={36} color={COLORS.text.white} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>Configuración de Bloqueo</Text>
+        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>Configuración de Bloqueo</Text>
       </View>
 
-      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.main }]}>
       <ScrollView style={styles.content}>
-        <Text style={[styles.sectionTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>Horarios:</Text>
+        <Text style={[styles.sectionTitle, { color: isDark ? COLORS.text.white : COLORS.secondary }]}>Horarios:</Text>
 
         {schedules.map((item) => (
-          <View key={item.id} style={[styles.scheduleCard, { backgroundColor: isDark ? '#333' : '#FFF' }]}>
-            <View style={[styles.iconBox, { backgroundColor: isDark ? '#4FB3C3' : '#6C5CE7' }]}>
+          <View key={item.id} style={[styles.scheduleCard, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.surface }]}>
+            <View style={[styles.iconBox, { backgroundColor: isDark ? COLORS.accent : COLORS.primary }]}>
               {item.icon}
             </View>
             <View style={styles.scheduleInfo}>
-              <Text style={[styles.scheduleTitle, { color: isDark ? '#FFF' : '#000' }]}>{item.title}</Text>
-              <Text style={[styles.scheduleTime, { color: isDark ? '#AAA' : '#666' }]}>{item.time}</Text>
+              <Text style={[styles.scheduleTitle, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>{item.title}</Text>
+              <Text style={[styles.scheduleTime, { color: COLORS.text.secondary }]}>{item.time}</Text>
             </View>
             <View style={styles.switchContainer}>
               <Switch 
                 value={false} 
                 onValueChange={() => handleSelectSchedule(item.title)}
-                trackColor={{ false: "#767577", true: "#6C5CE7" }}
+                trackColor={{ false: "#767577", true: COLORS.primary }}
                 thumbColor={"#f4f3f4"}
               />
             </View>
@@ -65,7 +65,7 @@ const LockConfigScreen = ({ route, navigation }) => {
         ))}
 
         <TouchableOpacity 
-          style={[styles.manualButton, { backgroundColor: isDark ? '#4FB3C3' : '#6C5CE7' }]} 
+          style={[styles.manualButton, { backgroundColor: isDark ? COLORS.accent : COLORS.primary }]} 
           onPress={() => navigation.navigate('ManualTime', { roomId, deviceId })}
         >
           <Text style={styles.manualButtonText}>Estimar Tiempo Manualmente</Text>
@@ -74,18 +74,18 @@ const LockConfigScreen = ({ route, navigation }) => {
       </View>
 
       {/* Bottom Nav */}
-      <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#B0B0B0' }]}>
+      <View style={[styles.bottomNav, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Home size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Inicio</Text>
+          <Home size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
+          <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>Inicio</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
-          <Users size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Salas</Text>
+          <Users size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
+          <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>Salas</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
-          <User size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>Cuenta</Text>
+          <User size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
+          <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>Cuenta</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -177,20 +177,25 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: 'row',
-    height: 100,
-    backgroundColor: '#B0B0B0',
+    height: 90,
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingBottom: 20,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 3,
   },
   navItem: {
     alignItems: 'center',
   },
   navText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: '600',
     marginTop: 4,
-    color: '#000',
   },
 });
 

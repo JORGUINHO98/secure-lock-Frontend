@@ -16,6 +16,7 @@ import { ChevronLeft, Moon, Bell, Globe, Shield, HelpCircle, Info, Check, X } fr
 import { useTranslation } from 'react-i18next';
 import * as SecureStore from 'expo-secure-store';
 import { useAppContext } from '../context/AppContext';
+import { COLORS, SPACING } from '../theme/colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -72,22 +73,22 @@ const SettingsScreen = ({ navigation }) => {
 
   const SettingItem = ({ icon: Icon, title, description, value, onValueChange, type = 'switch', onPress }) => (
     <TouchableOpacity
-      style={[styles.settingItem, { backgroundColor: isDark ? '#333' : '#F9F9F9' }]}
+      style={[styles.settingItem, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.offWhite }]}
       onPress={onPress}
       disabled={type === 'switch'}
     >
       <View style={styles.settingIconContainer}>
-        <Icon size={22} color={isDark ? '#FFF' : '#333'} />
+        <Icon size={22} color={COLORS.primary} />
       </View>
       <View style={styles.settingTextContainer}>
-        <Text style={[styles.settingTitle, { color: isDark ? '#FFF' : '#000' }]}>{title}</Text>
-        {description && <Text style={styles.settingDescription}>{description}</Text>}
+        <Text style={[styles.settingTitle, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>{title}</Text>
+        {description && <Text style={[styles.settingDescription, { color: COLORS.text.secondary }]}>{description}</Text>}
       </View>
       {type === 'switch' ? (
         <Switch
           value={value}
           onValueChange={onValueChange}
-          trackColor={{ false: '#767577', true: '#6C5CE7' }}
+          trackColor={{ false: '#767577', true: COLORS.primary }}
           thumbColor={Platform.OS === 'ios' ? '#FFF' : value ? '#FFF' : '#f4f3f4'}
         />
       ) : (
@@ -100,20 +101,20 @@ const SettingsScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
+      <StatusBar barStyle="light-content" />
 
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
+      <View style={[styles.header, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeft size={32} color={isDark ? '#FFF' : '#1E234C'} />
+          <ChevronLeft size={32} color={COLORS.text.white} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>{t('common.settings')}</Text>
+        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>{t('common.settings')}</Text>
         <View style={{ width: 32 }} />
       </View>
 
-      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#FFF' }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Preferencia de Visualización</Text>
+          <Text style={[styles.sectionTitle, { color: COLORS.primary }]}>Preferencia de Visualización</Text>
           <SettingItem
             icon={Moon}
             title="Modo Oscuro"
@@ -122,7 +123,7 @@ const SettingsScreen = ({ navigation }) => {
             onValueChange={toggleTheme}
           />
 
-          <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Notificaciones</Text>
+          <Text style={[styles.sectionTitle, { color: COLORS.primary }]}>Notificaciones</Text>
           <SettingItem
             icon={Bell}
             title="Notificaciones Push"
@@ -131,7 +132,7 @@ const SettingsScreen = ({ navigation }) => {
             onValueChange={setNotifications}
           />
 
-          <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Seguridad</Text>
+          <Text style={[styles.sectionTitle, { color: COLORS.primary }]}>Seguridad</Text>
           <SettingItem
             icon={Shield}
             title="Autenticación Biométrica"
@@ -140,7 +141,7 @@ const SettingsScreen = ({ navigation }) => {
             onValueChange={setBiometrics}
           />
 
-          <Text style={[styles.sectionTitle, { color: isDark ? '#6C5CE7' : '#6C5CE7' }]}>Aplicación</Text>
+          <Text style={[styles.sectionTitle, { color: COLORS.primary }]}>Aplicación</Text>
           <SettingItem
             icon={Globe}
             title={t('common.language') || "Idioma"}
@@ -177,14 +178,14 @@ const SettingsScreen = ({ navigation }) => {
           onPress={() => setLangModalVisible(false)}
         >
           <View 
-            style={[styles.modalContent, { backgroundColor: isDark ? '#2D2D2D' : '#FFF' }]}
+            style={[styles.modalContent, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.surface }]}
             onStartShouldSetResponder={() => true}
             onResponderTerminationRequest={() => false}
           >
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: isDark ? '#FFF' : '#000' }]}>Seleccionar Idioma</Text>
+              <Text style={[styles.modalTitle, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>Seleccionar Idioma</Text>
               <TouchableOpacity onPress={() => setLangModalVisible(false)}>
-                <X size={24} color={isDark ? '#FFF' : '#000'} />
+                <X size={24} color={isDark ? COLORS.text.white : COLORS.text.main} />
               </TouchableOpacity>
             </View>
             
@@ -196,8 +197,8 @@ const SettingsScreen = ({ navigation }) => {
                 activeOpacity={0.7}
                 hitSlop={{ top: 10, bottom: 10, left: 50, right: 50 }}
               >
-                <Text style={[styles.langText, { color: isDark ? '#FFF' : '#000' }]}>{getLanguageName(lang)}</Text>
-                {i18n.language && i18n.language.startsWith(lang) && <Check size={20} color="#6C5CE7" />}
+                <Text style={[styles.langText, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>{getLanguageName(lang)}</Text>
+                {i18n.language && i18n.language.startsWith(lang) && <Check size={20} color={COLORS.primary} />}
               </TouchableOpacity>
             ))}
           </View>
@@ -286,7 +287,7 @@ const styles = StyleSheet.create({
   },
   settingValue: {
     fontSize: 15,
-    color: '#6C5CE7',
+    color: COLORS.primary,
     fontWeight: '600',
   },
   modalOverlay: {

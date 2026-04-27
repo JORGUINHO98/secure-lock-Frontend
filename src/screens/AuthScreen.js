@@ -235,7 +235,7 @@ const AuthScreen = ({ navigation }) => {
               {/* Submit Button */}
               <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.7 }]} onPress={handleSubmit} disabled={isLoading}>
                 {isLoading ? (
-                  <ActivityIndicator color={COLORS.background.white} />
+                  <ActivityIndicator color={COLORS.text.white} />
                 ) : (
                   <Text style={styles.buttonText}>
                     {activeTab === 'login' ? t('common.login') : t('auth.createAccount')}
@@ -278,18 +278,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#1E234C', // Dark blue/purple from image
+    color: COLORS.secondary,
     letterSpacing: 2,
   },
   subtitle: {
     fontSize: 14,
-    color: '#000',
+    color: COLORS.text.main,
     marginTop: SPACING.xs,
     textAlign: 'center',
   },
   card: {
     width: '100%',
-    backgroundColor: COLORS.background.white,
+    backgroundColor: COLORS.background.surface,
     borderRadius: 24,
     padding: SPACING.lg,
     shadowColor: '#000',
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   buttonText: {
-    color: COLORS.background.white,
+    color: COLORS.text.white,
     fontSize: 18,
     fontWeight: 'bold',
   },

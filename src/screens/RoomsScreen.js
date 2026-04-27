@@ -86,26 +86,26 @@ const RoomsScreen = ({ navigation }) => {
 
   const getRoomIcon = (type) => {
     return (
-      <View style={[styles.iconContainer, { backgroundColor: isDark ? '#4FB3C3' : '#6C5CE7' }]}>
-        <Shield size={60} color="#FFF" />
+      <View style={[styles.iconContainer, { backgroundColor: COLORS.primary }]}>
+        <Shield size={60} color={COLORS.text.white} />
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#1A1A1A' : '#A8C3C0' }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+    <SafeAreaView style={[styles.container, { backgroundColor: COLORS.secondary }]}>
+      <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: isDark ? '#2D2D2D' : '#A8C3C0' }]}>
+      <View style={[styles.header, { backgroundColor: COLORS.secondary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={40} color={isDark ? '#FFF' : '#1E234C'} />
+          <Undo2 size={40} color={COLORS.text.white} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#1E234C' }]}>{t('rooms.title')}</Text>
+        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>{t('rooms.title')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5' }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: COLORS.background.main }]}>
       <ScrollView style={styles.content}>
         {rooms.length === 0 ? (
           <View style={styles.emptyState}>
@@ -115,17 +115,17 @@ const RoomsScreen = ({ navigation }) => {
           </View>
         ) : (
           rooms.map((room) => (
-            <View key={room.id} style={[styles.roomCard, { backgroundColor: isDark ? '#333' : '#D9D9D9' }]}>
+            <View key={room.id} style={[styles.roomCard, { backgroundColor: COLORS.background.surface }]}>
               {getRoomIcon(room.type)}
               <View style={styles.roomInfo}>
                 <View style={styles.roomHeaderRow}>
-                  <Text style={[styles.roomName, { color: isDark ? '#FFF' : '#000' }]}>{room.name}</Text>
+                  <Text style={[styles.roomName, { color: COLORS.text.main }]}>{room.name}</Text>
                   <View style={styles.actionButtons}>
                     <TouchableOpacity onPress={() => handleEditPress(room)} style={styles.actionBtn}>
-                      <Pencil size={20} color={COLORS.blue} />
+                      <Pencil size={20} color={COLORS.primary} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleDeletePress(room.id)} style={styles.actionBtn}>
-                      <Trash2 size={20} color={COLORS.red} />
+                      <Trash2 size={20} color={COLORS.status.locked} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -133,7 +133,7 @@ const RoomsScreen = ({ navigation }) => {
                   style={styles.verMasButton}
                   onPress={() => navigation.navigate('RoomDetails', { roomId: room.id, roomName: room.name })}
                 >
-                  <Text style={styles.verMasText}>{t('common.viewMore')}</Text>
+                  <Text style={[styles.verMasText, { color: COLORS.primary }]}>{t('common.viewMore')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -145,23 +145,23 @@ const RoomsScreen = ({ navigation }) => {
       </View>
 
       {/* FAB */}
-      <TouchableOpacity style={[styles.fab, { backgroundColor: isDark ? '#4FB3C3' : '#000' }]} onPress={handlePlusPress}>
-        <Plus size={32} color="#FFF" strokeWidth={2.5} />
+      <TouchableOpacity style={[styles.fab, { backgroundColor: COLORS.primary }]} onPress={handlePlusPress}>
+        <Plus size={32} color={COLORS.text.white} strokeWidth={2.5} />
       </TouchableOpacity>
 
       {/* Bottom Nav */}
-      <View style={[styles.bottomNav, { backgroundColor: isDark ? '#2D2D2D' : '#B0B0B0' }]}>
+      <View style={[styles.bottomNav, { backgroundColor: COLORS.background.surface }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Home size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.home')}</Text>
+          <Home size={28} color={COLORS.secondary} />
+          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} activeOpacity={1}>
-          <Users size={32} color={isDark ? '#4FB3C3' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#4FB3C3' : '#000' }]}>{t('common.rooms')}</Text>
+          <Users size={28} color={COLORS.primary} />
+          <Text style={[styles.navText, { color: COLORS.primary }]}>{t('common.rooms')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
-          <User size={32} color={isDark ? '#FFF' : '#000'} />
-          <Text style={[styles.navText, { color: isDark ? '#FFF' : '#000' }]}>{t('common.account')}</Text>
+          <User size={28} color={COLORS.secondary} />
+          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.account')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -326,7 +326,6 @@ const styles = StyleSheet.create({
   },
   verMasText: {
     fontSize: 18,
-    color: '#6699CC',
     fontWeight: '600',
   },
   emptySpace: {
@@ -340,31 +339,35 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
   bottomNav: {
     flexDirection: 'row',
-    height: 100,
-    backgroundColor: '#B0B0B0',
+    height: 90,
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingBottom: 20,
+    paddingBottom: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.06)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 3,
   },
   navItem: {
     alignItems: 'center',
   },
   navText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: '600',
     marginTop: 4,
-    color: '#000',
   },
   modalOverlay: {
     flex: 1,
@@ -373,25 +376,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#D9D9D9',
+    backgroundColor: COLORS.background.surface,
     width: '90%',
     padding: 20,
-    borderRadius: 0,
+    borderRadius: 20,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 30,
     textAlign: 'center',
-    color: '#000',
+    color: COLORS.text.main,
   },
   modalInput: {
     borderBottomWidth: 2,
-    borderBottomColor: '#6C5CE7',
+    borderBottomColor: COLORS.primary,
     fontSize: 18,
     paddingVertical: 10,
     marginBottom: 30,
-    color: '#000',
+    color: COLORS.text.main,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -400,20 +403,22 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 0,
+    borderRadius: 12,
     alignItems: 'center',
     marginHorizontal: 5,
   },
   cancelButton: {
-    backgroundColor: '#C84343',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: COLORS.status.locked,
   },
   confirmButton: {
-    backgroundColor: '#3E76C5',
+    backgroundColor: COLORS.primary,
   },
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: COLORS.text.main,
   }
 });
 

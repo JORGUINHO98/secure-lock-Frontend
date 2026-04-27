@@ -5,12 +5,12 @@ import { COLORS, SPACING } from '../theme/colors';
 const ActionCard = ({ title, subtitle, icon: Icon, backgroundColor, onPress }) => {
   return (
     <TouchableOpacity 
-      style={[styles.container, { backgroundColor }]} 
+      style={[styles.container, { backgroundColor: COLORS.background.surface }]} 
       onPress={onPress}
       activeOpacity={0.8}
     >
       <View style={styles.iconContainer}>
-        {Icon && <Icon size={48} color={COLORS.text.primary} strokeWidth={1.5} />}
+        {Icon && <Icon size={48} color={COLORS.primary} strokeWidth={1.5} />}
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.title}>{title}</Text>
@@ -25,10 +25,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.lg,
-    borderRadius: 8, // Rectangular but slightly rounded as in the image
+    borderRadius: 16,
     marginBottom: SPACING.md,
     width: '100%',
     minHeight: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   iconContainer: {
     marginRight: SPACING.md,
@@ -39,12 +44,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: COLORS.text.primary,
+    color: COLORS.text.main,
     textTransform: 'uppercase',
   },
   subtitle: {
     fontSize: 12,
-    color: COLORS.text.primary,
+    color: COLORS.text.secondary,
     marginTop: 4,
     fontWeight: '500',
   },
