@@ -34,7 +34,15 @@ const CameraScannerScreen = ({ route, navigation }) => {
     setScanned(true);
     
     console.log('QR Escaneado:', data);
-    const invite_code = data;
+    let invite_code;
+    try {
+      // Intentamos parsear por si viene en formato JSON
+      const parsedData = JSON.parse(data);
+      invite_code = parsedData.invite_code || data;
+    } catch (error) {
+      // Si no es JSON, asumimos que el dato es el código directamente
+      invite_code = data;
+    }
     const id_unico = `dispositivo-${Math.random().toString(36).substr(2, 9)}`;
 
     try {
