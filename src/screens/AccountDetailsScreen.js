@@ -15,7 +15,7 @@ import {
   Image,
   ActivityIndicator
 } from 'react-native';
-import { ChevronLeft, User, Mail, Phone, MapPin, Save, Camera } from 'lucide-react-native';
+import { Undo2, User, Mail, Phone, MapPin, Save, Camera } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { COLORS, SPACING } from '../theme/colors';
@@ -248,7 +248,7 @@ const AccountDetailsScreen = ({ navigation }) => {
 
       <View style={[styles.header, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeft size={32} color={COLORS.text.white} />
+          <Undo2 size={32} color={COLORS.text.white} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>{t('account.personal_data')}</Text>
         <View style={{ width: 32 }} />

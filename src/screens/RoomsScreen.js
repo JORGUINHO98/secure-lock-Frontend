@@ -6,34 +6,36 @@ import { Platform, View,
   SafeAreaView,
   StatusBar,
   ScrollView,
-  Image,
   Dimensions,
-  Modal,
-  TextInput,
   Alert } from 'react-native';
-import { Undo2, Plus, Home, Users, User, Pencil, Trash2, Shield, Lock, Layout } from 'lucide-react-native';
+import { Plus, Home, Users, User } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { COLORS, SPACING } from '../theme/colors';
+import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../theme/colors';
 import { useAppContext } from '../context/AppContext';
-import PremiumScreen from './PremiumScreen';
+import Header from '../components/Header';
+import RoomCard from '../components/RoomCard';
+import CustomModal from '../components/CustomModal';
+import CustomInput from '../components/CustomInput';
 
 const { width } = Dimensions.get('window');
 
 const RoomsScreen = ({ navigation }) => {
-  const { rooms, isPremium, addRoom, updateRoom, deleteRoom, theme } = useAppContext();
+  const { rooms, isPremium, addRoom, updateRoom, deleteRoom, theme, roomDevices } = useAppContext();
   const { t } = useTranslation();
-  const [premiumVisible, setPremiumVisible] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentRoom, setCurrentRoom] = useState(null);
   const [roomNameInput, setRoomNameInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
   const isDark = theme === 'dark';
+  const themeColors = isDark ? COLORS.dark : COLORS.light;
 
   const handlePlusPress = () => {
     if (!isPremium && rooms.length >= 2) {
       Alert.alert(
-        t('rooms.limit_reached'),
-        t('rooms.limit_reached_sub'),
+        t('rooms.limit_reached') || "Límite alcanzado",
+        t('rooms.limit_reached_sub') || "Suscríbete a Premium para crear más salas.",
         [
           { text: t('common.cancel'), style: "cancel" },
           { text: "Premium", onPress: () => navigation.navigate('Premium') }
@@ -47,15 +49,16 @@ const RoomsScreen = ({ navigation }) => {
   };
 
   const handleCreateRoom = async () => {
-    if (roomNameInput.trim()) {
-      const success = await addRoom(roomNameInput);
-      if (success) {
-        setRoomNameInput('');
-        setCreateModalVisible(false);
-      } else {
-        setCreateModalVisible(false);
-        navigation.navigate('Premium');
-      }
+    if (!roomNameInput.trim()) return;
+    setIsLoading(true);
+    const success = await addRoom(roomNameInput);
+    setIsLoading(false);
+    if (success) {
+      setRoomNameInput('');
+      setCreateModalVisible(false);
+    } else {
+      setCreateModalVisible(false);
+      navigation.navigate('Premium');
     }
   };
 
@@ -67,7 +70,9 @@ const RoomsScreen = ({ navigation }) => {
 
   const handleUpdateRoom = async () => {
     if (roomNameInput.trim() && currentRoom) {
+      setIsLoading(true);
       await updateRoom(currentRoom.id, roomNameInput);
+      setIsLoading(false);
       setEditModalVisible(false);
       setCurrentRoom(null);
     }
@@ -75,8 +80,8 @@ const RoomsScreen = ({ navigation }) => {
 
   const handleDeletePress = (id) => {
     Alert.alert(
-      t('rooms.delete_title'),
-      t('rooms.delete_confirm'),
+      t('rooms.delete_title') || "¿Eliminar Sala?",
+      t('rooms.delete_confirm') || "¿Estás seguro que deseas eliminar esta sala?",
       [
         { text: t('common.cancel'), style: "cancel" },
         { text: t('common.delete'), style: "destructive", onPress: () => deleteRoom(id) }
@@ -84,170 +89,140 @@ const RoomsScreen = ({ navigation }) => {
     );
   };
 
-  const getRoomIcon = (type) => {
-    return (
-      <View style={[styles.iconContainer, { backgroundColor: COLORS.primary }]}>
-        <Shield size={60} color={COLORS.text.white} />
-      </View>
-    );
-  };
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: COLORS.secondary }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
       <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: COLORS.secondary }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={40} color={COLORS.text.white} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>{t('rooms.title')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <Header 
+        title={t('rooms.title')}
+        showBack
+        onBack={() => navigation.goBack()}
+        isDark={true}
+      />
+      <View style={[styles.contentWrapper, { backgroundColor: themeColors.background }]}>
 
-      <View style={[styles.contentWrapper, { backgroundColor: COLORS.background.main }]}>
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: SPACING.md }}
+      >
         {rooms.length === 0 ? (
           <View style={styles.emptyState}>
-            <Users size={60} color={isDark ? '#333' : '#CCC'} style={{ marginBottom: 20 }} />
-            <Text style={[styles.emptyTitle, { color: isDark ? '#FFF' : '#333' }]}>{t('rooms.no_rooms')}</Text>
-            <Text style={[styles.emptySubtitle, { color: isDark ? '#AAA' : '#666' }]}>{t('rooms.no_rooms_sub')}</Text>
+            <View style={[styles.emptyIconContainer, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+              <Users size={48} color={isDark ? COLORS.textSecondary : '#94A3B8'} />
+            </View>
+            <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t('rooms.no_rooms')}</Text>
+            <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary }]}>{t('rooms.no_rooms_sub')}</Text>
+            
+            <TouchableOpacity 
+              style={[styles.emptyButton, { backgroundColor: COLORS.primary }]}
+              onPress={handlePlusPress}
+            >
+              <Text style={styles.emptyButtonText}>{t('rooms.add_first_room') || "Crear mi primera sala"}</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           rooms.map((room) => (
-            <View key={room.id} style={[styles.roomCard, { backgroundColor: COLORS.background.surface }]}>
-              {getRoomIcon(room.type)}
-              <View style={styles.roomInfo}>
-                <View style={styles.roomHeaderRow}>
-                  <Text style={[styles.roomName, { color: COLORS.text.main }]}>{room.name}</Text>
-                  <View style={styles.actionButtons}>
-                    <TouchableOpacity onPress={() => handleEditPress(room)} style={styles.actionBtn}>
-                      <Pencil size={20} color={COLORS.primary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDeletePress(room.id)} style={styles.actionBtn}>
-                      <Trash2 size={20} color={COLORS.status.locked} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <TouchableOpacity
-                  style={styles.verMasButton}
-                  onPress={() => navigation.navigate('RoomDetails', { roomId: room.id, roomName: room.name })}
-                >
-                  <Text style={[styles.verMasText, { color: COLORS.primary }]}>{t('common.viewMore')}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            <RoomCard 
+              key={room.id}
+              room={{
+                ...room,
+                deviceCount: (roomDevices[room.id] || []).length
+              }}
+              onEdit={() => handleEditPress(room)}
+              onDelete={() => handleDeletePress(room.id)}
+              onPress={() => navigation.navigate('RoomDetails', { roomId: room.id, roomName: room.name })}
+            />
           ))
         )}
-
-        <View style={{ height: 100 }} />
       </ScrollView>
       </View>
 
       {/* FAB */}
-      <TouchableOpacity style={[styles.fab, { backgroundColor: COLORS.primary }]} onPress={handlePlusPress}>
-        <Plus size={32} color={COLORS.text.white} strokeWidth={2.5} />
+      <TouchableOpacity 
+        style={[styles.fab, SHADOWS.large, { backgroundColor: COLORS.primary }]} 
+        onPress={handlePlusPress}
+      >
+        <Plus size={32} color="#FFFFFF" strokeWidth={2.5} />
       </TouchableOpacity>
 
       {/* Bottom Nav */}
-      <View style={[styles.bottomNav, { backgroundColor: COLORS.background.surface }]}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Home size={28} color={COLORS.secondary} />
-          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.home')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} activeOpacity={1}>
-          <Users size={28} color={COLORS.primary} />
-          <Text style={[styles.navText, { color: COLORS.primary }]}>{t('common.rooms')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
-          <User size={28} color={COLORS.secondary} />
-          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.account')}</Text>
-        </TouchableOpacity>
+      <View style={[styles.bottomNav, { backgroundColor: themeColors.surface, borderTopColor: themeColors.border }]}>
+        <NavButton 
+          icon={Home} 
+          label={t('common.home')} 
+          onPress={() => navigation.navigate('Home')} 
+          isDark={isDark} 
+        />
+        <NavButton 
+          icon={Users} 
+          label={t('common.rooms')} 
+          active 
+          isDark={isDark} 
+        />
+        <NavButton 
+          icon={User} 
+          label={t('common.account')} 
+          onPress={() => navigation.navigate('Account')} 
+          isDark={isDark} 
+        />
       </View>
 
       {/* Create Modal */}
-      <Modal visible={createModalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('rooms.new_room')}</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={roomNameInput}
-              onChangeText={setRoomNameInput}
-              placeholder={t('rooms.room_name_placeholder')}
-              autoFocus
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setCreateModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>{t('common.cancel')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.confirmButton]}
-                onPress={handleCreateRoom}
-              >
-                <Text style={[styles.buttonText, { color: '#FFF' }]}>{t('common.create')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <CustomModal
+        visible={createModalVisible}
+        onClose={() => setCreateModalVisible(false)}
+        title={t('rooms.new_room')}
+        primaryLabel={t('common.create')}
+        primaryAction={handleCreateRoom}
+        secondaryLabel={t('common.cancel')}
+        isLoading={isLoading}
+      >
+        <CustomInput
+          label={t('rooms.room_name_label') || "Nombre de la Sala"}
+          value={roomNameInput}
+          onChangeText={setRoomNameInput}
+          placeholder={t('rooms.room_name_placeholder')}
+          autoFocus
+        />
+      </CustomModal>
 
       {/* Edit Modal */}
-      <Modal visible={editModalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('rooms.edit_room')}</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={roomNameInput}
-              onChangeText={setRoomNameInput}
-              placeholder={t('rooms.room_name_placeholder')}
-              autoFocus
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setEditModalVisible(false)}
-              >
-                <Text style={styles.buttonText}>{t('common.cancel')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.confirmButton]}
-                onPress={handleUpdateRoom}
-              >
-                <Text style={[styles.buttonText, { color: '#FFF' }]}>{t('common.save')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <CustomModal
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        title={t('rooms.edit_room')}
+        primaryLabel={t('common.save')}
+        primaryAction={handleUpdateRoom}
+        secondaryLabel={t('common.cancel')}
+        isLoading={isLoading}
+      >
+        <CustomInput
+          label={t('rooms.room_name_label') || "Nombre de la Sala"}
+          value={roomNameInput}
+          onChangeText={setRoomNameInput}
+          placeholder={t('rooms.room_name_placeholder')}
+          autoFocus
+        />
+      </CustomModal>
 
     </SafeAreaView>
   );
 };
 
+const NavButton = ({ icon: Icon, label, active, onPress, isDark }) => {
+  const themeColors = isDark ? COLORS.dark : COLORS.light;
+  const color = active ? COLORS.primary : themeColors.textSecondary;
+  return (
+    <TouchableOpacity style={styles.navItem} onPress={onPress}>
+      <Icon size={24} color={color} strokeWidth={active ? 2.5 : 2} />
+      <Text style={[styles.navText, { color }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 55,
-    paddingBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  backButton: {
-    padding: 5,
   },
   contentWrapper: {
     flex: 1,
@@ -260,166 +235,72 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     flex: 1,
-    padding: 60,
+    padding: SPACING.xxl,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 50,
+    marginTop: 60,
   },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  roomCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 15,
-    marginVertical: 6,
-    padding: 12,
-    height: 120,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  iconContainer: {
+  emptyIconContainer: {
     width: 100,
     height: 100,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 5,
+    marginBottom: SPACING.lg,
   },
-  roomInfo: {
-    flex: 1,
-    paddingLeft: 20,
-    height: '100%',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
+  emptyTitle: {
+    ...TYPOGRAPHY.h2,
+    marginBottom: SPACING.sm,
+    textAlign: 'center',
   },
-  roomHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  emptySubtitle: {
+    ...TYPOGRAPHY.body,
+    textAlign: 'center',
+    marginBottom: SPACING.xl,
+    paddingHorizontal: SPACING.md,
   },
-  roomName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    flex: 1,
+  emptyButton: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+    borderRadius: 16,
   },
-  actionButtons: {
-    flexDirection: 'row',
-  },
-  actionBtn: {
-    padding: 5,
-    marginLeft: 10,
-  },
-  verMasButton: {
-    alignSelf: 'flex-end',
-  },
-  verMasText: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  emptySpace: {
-    height: 200,
-    backgroundColor: '#A0A0A0',
+  emptyButtonText: {
+    ...TYPOGRAPHY.body,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   fab: {
     position: 'absolute',
-    bottom: 115,
-    right: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    bottom: Platform.OS === 'ios' ? 110 : 90,
+    right: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    zIndex: 10,
   },
   bottomNav: {
     flexDirection: 'row',
-    height: 90,
+    height: Platform.OS === 'ios' ? 90 : 70,
+    borderTopWidth: 1,
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingBottom: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.06)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   navItem: {
     alignItems: 'center',
+    width: width / 3,
   },
   navText: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...TYPOGRAPHY.small,
     marginTop: 4,
+    fontWeight: '600',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: COLORS.background.surface,
-    width: '90%',
-    padding: 20,
-    borderRadius: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 30,
-    textAlign: 'center',
-    color: COLORS.text.main,
-  },
-  modalInput: {
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.primary,
-    fontSize: 18,
-    paddingVertical: 10,
-    marginBottom: 30,
-    color: COLORS.text.main,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  cancelButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: COLORS.status.locked,
-  },
-  confirmButton: {
-    backgroundColor: COLORS.primary,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text.main,
-  }
 });
 
 export default RoomsScreen;

@@ -12,7 +12,7 @@ import {
   Modal,
   Dimensions
 } from 'react-native';
-import { ChevronLeft, Moon, Bell, Globe, Shield, HelpCircle, Info, Check, X } from 'lucide-react-native';
+import { Undo2, Moon, Bell, Globe, Shield, HelpCircle, Info, Check, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import * as SecureStore from 'expo-secure-store';
 import { useAppContext } from '../context/AppContext';
@@ -94,7 +94,6 @@ const SettingsScreen = ({ navigation }) => {
       ) : (
         <View style={styles.valueContainer}>
           <Text style={styles.settingValue}>{value}</Text>
-          <ChevronLeft size={16} color="#888" style={{ transform: [{ rotate: '180deg' }], marginLeft: 5 }} />
         </View>
       )}
     </TouchableOpacity>
@@ -106,7 +105,7 @@ const SettingsScreen = ({ navigation }) => {
 
       <View style={[styles.header, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeft size={32} color={COLORS.text.white} />
+          <Undo2 size={32} color={COLORS.text.white} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>{t('common.settings')}</Text>
         <View style={{ width: 32 }} />

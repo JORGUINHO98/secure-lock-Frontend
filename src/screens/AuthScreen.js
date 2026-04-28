@@ -13,11 +13,10 @@ import {
   Alert,
   ActivityIndicator
 } from 'react-native';
-import { BlurView } from 'expo-blur';
 import * as SecureStore from 'expo-secure-store';
-import { User, Mail, Lock, ShieldCheck } from 'lucide-react-native';
+import { User, Mail, Lock } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { COLORS, SPACING } from '../theme/colors';
+import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../theme/colors';
 import CustomInput from '../components/CustomInput';
 import { useAppContext } from '../context/AppContext';
 import api from '../services/api';
@@ -25,10 +24,11 @@ import api from '../services/api';
 const { width } = Dimensions.get('window');
 
 const AuthScreen = ({ navigation }) => {
-  const { setUser } = useAppContext();
+  const { setUser, theme } = useAppContext();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('register'); // Default to 'register' to match the image
+  const [activeTab, setActiveTab] = useState('register');
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [form, setForm] = useState({
     fullName: '',
     email: '',
@@ -36,22 +36,24 @@ const AuthScreen = ({ navigation }) => {
     confirmPassword: '',
   });
 
+  const isDark = theme === 'dark';
+  const themeColors = isDark ? COLORS.dark : COLORS.light;
+
   const handleInputChange = (field, value) => {
     setForm({ ...form, [field]: value });
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: null });
+    }
   };
 
-  // Helper: realiza login real contra la API y configura el usuario
   const performLogin = async (email, password) => {
-    // 1. Obtener token JWT
     const tokenResponse = await api.post('/auth/token/', { email, password });
     const { access } = tokenResponse.data;
     await SecureStore.setItemAsync('userToken', access);
 
-    // 2. Obtener perfil del usuario
     const profileResponse = await api.get('/users/me/');
     const userData = profileResponse.data;
 
-    // 3. Normalizar el nombre e imagen: el backend puede devolver full_name, avatar, etc.
     const normalizedUser = {
       ...userData,
       name: userData.full_name || userData.name || userData.username || email.split('@')[0],
@@ -62,90 +64,46 @@ const AuthScreen = ({ navigation }) => {
   };
 
   const handleSubmit = async () => {
+    setErrors({});
     setIsLoading(true);
     try {
       if (activeTab === 'login') {
-        // Login real
         await performLogin(form.email, form.password);
       } else {
-        // Validaciones locales
-        if (!form.fullName.trim()) {
-          Alert.alert('Error', 'El nombre completo es obligatorio.');
-          setIsLoading(false);
-          return;
-        }
-        if (!form.email.trim()) {
-          Alert.alert('Error', 'El correo electrónico es obligatorio.');
-          setIsLoading(false);
-          return;
-        }
-        if (form.password.length < 6) {
-          Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres.');
-          setIsLoading(false);
-          return;
-        }
-        if (form.password !== form.confirmPassword) {
-          Alert.alert('Error', 'Las contraseñas no coinciden.');
+        // Validaciones locales con feedback inline
+        const newErrors = {};
+        if (!form.fullName.trim()) newErrors.fullName = t('auth.error_name') || 'El nombre es obligatorio';
+        if (!form.email.trim()) newErrors.email = t('auth.error_email') || 'El correo es obligatorio';
+        if (form.password.length < 6) newErrors.password = t('auth.error_pass_short') || 'Mínimo 6 caracteres';
+        if (form.password !== form.confirmPassword) newErrors.confirmPassword = t('auth.error_pass_mismatch') || 'No coinciden';
+
+        if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
           setIsLoading(false);
           return;
         }
 
-        // Limpiar cualquier token residual antes de registrar
         await SecureStore.deleteItemAsync('userToken');
-
-        console.log('[REGISTRO] Enviando payload:', {
-          full_name: form.fullName,
-          email: form.email,
-          password: '***',
-        });
-
         await api.post('/users/register/', {
           full_name: form.fullName,
           email: form.email,
           password: form.password,
         });
 
-        console.log('[REGISTRO] Éxito, iniciando auto-login...');
-        // Auto-login después del registro exitoso
         await performLogin(form.email, form.password);
       }
       navigation.navigate('Home');
     } catch (error) {
-      // Log completo para debug
-      console.log('[AUTH ERROR] Status:', error.response?.status);
-      console.log('[AUTH ERROR] Data:', JSON.stringify(error.response?.data));
-      console.log('[AUTH ERROR] URL:', error.config?.url);
-
+      console.log('[AUTH ERROR]', error.response?.data);
       const data = error.response?.data;
-      let message = 'Error de conexión. Verifica tu red e inténtalo de nuevo.';
+      let message = t('auth.error_generic') || 'Error de conexión';
 
       if (data) {
-        if (data.detail) {
-          message = data.detail;
-        } else if (data.error) {
-          message = data.error;
-        } else if (data.email) {
-          // Campo específico del serializador DRF
-          message = `Correo: ${Array.isArray(data.email) ? data.email[0] : data.email}`;
-        } else if (data.password) {
-          message = `Contraseña: ${Array.isArray(data.password) ? data.password[0] : data.password}`;
-        } else if (data.full_name) {
-          message = `Nombre: ${Array.isArray(data.full_name) ? data.full_name[0] : data.full_name}`;
-        } else if (data.non_field_errors) {
-          message = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
-        } else {
-          // Mostrar la primera clave del objeto de error
-          const firstKey = Object.keys(data)[0];
-          if (firstKey) {
-            const val = data[firstKey];
-            message = `${firstKey}: ${Array.isArray(val) ? val[0] : val}`;
-          } else {
-            message = JSON.stringify(data);
-          }
-        }
+        if (data.detail || data.error) message = data.detail || data.error;
+        else if (data.non_field_errors) message = data.non_field_errors[0];
       }
 
-      Alert.alert('Error al registrarse', message);
+      Alert.alert(t('common.error'), message);
     } finally {
       setIsLoading(false);
     }
@@ -157,41 +115,49 @@ const AuthScreen = ({ navigation }) => {
       style={styles.background}
       resizeMode="cover"
     >
+      <View style={[styles.overlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(26, 31, 54, 0.4)' }]} />
+      
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Logo and Title */}
+          {/* Header */}
           <View style={styles.header}>
-            <Image
-              source={require('../../assets/logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
+            <View style={[styles.logoContainer, SHADOWS.large]}>
+              <Image
+                source={require('../../assets/logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
             <Text style={styles.title}>{t('auth.title')}</Text>
             <Text style={styles.subtitle}>{t('auth.subtitle')}</Text>
           </View>
 
           {/* Auth Card */}
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: themeColors.surface }, SHADOWS.large]}>
             {/* Tabs */}
-            <View style={styles.tabContainer}>
+            <View style={[styles.tabContainer, { backgroundColor: isDark ? '#2D3748' : '#F7FAFC' }]}>
               <TouchableOpacity
                 style={[styles.tab, activeTab === 'login' && styles.activeTab]}
                 onPress={() => setActiveTab('login')}
               >
-                <Text style={[styles.tabText, activeTab === 'login' && styles.activeTabText]}>{t('common.login')}</Text>
+                <Text style={[styles.tabText, { color: activeTab === 'login' ? '#FFF' : themeColors.textSecondary }]}>
+                  {t('common.login')}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.tab, activeTab === 'register' && styles.activeTab]}
                 onPress={() => setActiveTab('register')}
               >
-                <Text style={[styles.tabText, activeTab === 'register' && styles.activeTabText]}>{t('common.register')}</Text>
+                <Text style={[styles.tabText, { color: activeTab === 'register' ? '#FFF' : themeColors.textSecondary }]}>
+                  {t('common.register')}
+                </Text>
               </TouchableOpacity>
             </View>
 
-            {/* Form Fields */}
+            {/* Form */}
             <View style={styles.form}>
               {activeTab === 'register' && (
                 <CustomInput
@@ -200,6 +166,7 @@ const AuthScreen = ({ navigation }) => {
                   icon={User}
                   value={form.fullName}
                   onChangeText={(val) => handleInputChange('fullName', val)}
+                  error={errors.fullName}
                 />
               )}
 
@@ -210,6 +177,7 @@ const AuthScreen = ({ navigation }) => {
                 value={form.email}
                 onChangeText={(val) => handleInputChange('email', val)}
                 keyboardType="email-address"
+                error={errors.email}
               />
 
               <CustomInput
@@ -219,6 +187,7 @@ const AuthScreen = ({ navigation }) => {
                 secureTextEntry
                 value={form.password}
                 onChangeText={(val) => handleInputChange('password', val)}
+                error={errors.password}
               />
 
               {activeTab === 'register' && (
@@ -229,13 +198,17 @@ const AuthScreen = ({ navigation }) => {
                   secureTextEntry
                   value={form.confirmPassword}
                   onChangeText={(val) => handleInputChange('confirmPassword', val)}
+                  error={errors.confirmPassword}
                 />
               )}
 
-              {/* Submit Button */}
-              <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.7 }]} onPress={handleSubmit} disabled={isLoading}>
+              <TouchableOpacity 
+                style={[styles.button, isLoading && { opacity: 0.8 }]} 
+                onPress={handleSubmit} 
+                disabled={isLoading}
+              >
                 {isLoading ? (
-                  <ActivityIndicator color={COLORS.text.white} />
+                  <ActivityIndicator color="#FFF" />
                 ) : (
                   <Text style={styles.buttonText}>
                     {activeTab === 'login' ? t('common.login') : t('auth.createAccount')}
@@ -256,8 +229,9 @@ const styles = StyleSheet.create({
   },
   background: {
     flex: 1,
-    width: '100%',
-    height: '100%',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
   },
   scrollContent: {
     flexGrow: 1,
@@ -268,80 +242,75 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: SPACING.xl,
-    marginTop: SPACING.lg,
   },
-  logo: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  logoContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: SPACING.md,
   },
+  logo: {
+    width: 80,
+    height: 80,
+  },
   title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: COLORS.secondary,
-    letterSpacing: 2,
+    ...TYPOGRAPHY.h1,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
   subtitle: {
-    fontSize: 14,
-    color: COLORS.text.main,
-    marginTop: SPACING.xs,
+    ...TYPOGRAPHY.body,
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
+    marginTop: 4,
   },
   card: {
     width: '100%',
-    backgroundColor: COLORS.background.surface,
-    borderRadius: 24,
+    borderRadius: 32,
     padding: SPACING.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
   },
   tabContainer: {
     flexDirection: 'row',
-    marginBottom: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    height: 56,
+    borderRadius: 16,
+    padding: 6,
+    marginBottom: SPACING.xl,
   },
   tab: {
     flex: 1,
-    paddingVertical: SPACING.md,
+    justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 12,
   },
   activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.primary,
+    backgroundColor: COLORS.primary,
+    ...SHADOWS.small,
   },
   tabText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text.muted,
-  },
-  activeTabText: {
-    color: COLORS.primary,
+    fontWeight: '700',
   },
   form: {
     width: '100%',
   },
   button: {
     backgroundColor: COLORS.primary,
-    height: 56,
-    borderRadius: 12,
+    height: 58,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: SPACING.md,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    marginTop: SPACING.lg,
+    ...SHADOWS.medium,
   },
   buttonText: {
-    color: COLORS.text.white,
+    color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
 });
 

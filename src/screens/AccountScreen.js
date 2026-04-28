@@ -7,21 +7,26 @@ import { Platform, View,
   StatusBar,
   ScrollView,
   Alert,
-  Image } from 'react-native';
+  Image,
+  Dimensions } from 'react-native';
 import { User, LogOut, CreditCard, ChevronRight, Home, Users, Settings } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
-import { COLORS, SPACING } from '../theme/colors';
+import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../theme/colors';
+import Header from '../components/Header';
+
+const { width } = Dimensions.get('window');
 
 const AccountScreen = ({ navigation }) => {
   const { theme, user, logout } = useAppContext();
   const { t } = useTranslation();
   const isDark = theme === 'dark';
+  const themeColors = isDark ? COLORS.dark : COLORS.light;
 
   const handleLogout = () => {
     Alert.alert(
       t('common.logout'),
-      t('rooms.delete_confirm'),
+      t('home.logout_confirm') || "¿Estás seguro que quieres salir?",
       [
         { text: t('common.cancel'), style: "cancel" },
         { text: t('common.logout'), style: "destructive", onPress: () => {
@@ -32,19 +37,31 @@ const AccountScreen = ({ navigation }) => {
     );
   };
 
-  const MenuItem = ({ icon, title, onPress, showChevron = true, isDestructive = false }) => (
+  const MenuItem = ({ icon: Icon, title, onPress, showChevron = true, isDestructive = false }) => (
     <TouchableOpacity 
-      style={[styles.menuItem, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.surface }]} 
+      style={[
+        styles.menuItem, 
+        { 
+          backgroundColor: themeColors.surface,
+          borderColor: themeColors.border,
+        },
+        SHADOWS.small
+      ]} 
       onPress={onPress}
     >
       <View style={styles.menuItemLeft}>
-        {icon}
+        <View style={[
+          styles.menuIconCircle, 
+          { backgroundColor: isDestructive ? 'rgba(255, 59, 48, 0.1)' : COLORS.primaryLight }
+        ]}>
+          <Icon size={20} color={isDestructive ? COLORS.status.locked : COLORS.primary} />
+        </View>
         <Text style={[
           styles.menuItemText, 
-          { color: isDestructive ? COLORS.status.locked : (isDark ? COLORS.text.white : COLORS.text.main) }
+          { color: isDestructive ? COLORS.status.locked : themeColors.text }
         ]}>{title}</Text>
       </View>
-      {showChevron && <ChevronRight size={24} color={isDark ? COLORS.text.secondary : COLORS.text.secondary} />}
+      {showChevron && <ChevronRight size={20} color={themeColors.textSecondary} />}
     </TouchableOpacity>
   );
 
@@ -52,49 +69,59 @@ const AccountScreen = ({ navigation }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
       <StatusBar barStyle="light-content" />
       
-      <View style={[styles.header, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
-        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>{t('common.account')}</Text>
-      </View>
-
-      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.main }]}>
-
-      <ScrollView style={styles.content}>
+      <Header 
+        title={t('common.account')}
+        isDark={true}
+      />
+      <View style={[styles.contentWrapper, { backgroundColor: themeColors.background }]}>
+      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 120 }}>
         {/* User Info Card */}
-        <View style={[styles.userCard, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.surface }]}>
+        <View style={[
+          styles.userCard, 
+          { backgroundColor: themeColors.surface, borderColor: themeColors.border },
+          SHADOWS.medium
+        ]}>
           <View style={[styles.avatar, { backgroundColor: COLORS.primary }]}>
             {(user?.avatar || user?.profile_image || user?.photo) ? (
               <Image
                 source={{ uri: user.avatar || user.profile_image || user.photo }}
-                style={{ width: 80, height: 80, borderRadius: 40 }}
+                style={styles.avatarImage}
               />
             ) : (
-              <User size={50} color={COLORS.text.white} />
+              <User size={40} color="#FFFFFF" />
             )}
           </View>
           <View style={styles.userInfo}>
-            <Text style={[styles.userName, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>{user?.name || user?.full_name || user?.username || t('common.user')}</Text>
-            <Text style={[styles.userEmail, { color: COLORS.text.secondary }]}>{user?.email || 'email@example.com'}</Text>
+            <Text style={[styles.userName, { color: themeColors.text }]}>
+              {user?.name || user?.full_name || user?.username || t('common.user')}
+            </Text>
+            <Text style={[styles.userEmail, { color: themeColors.textSecondary }]}>
+              {user?.email || 'email@example.com'}
+            </Text>
+            <View style={[styles.planBadge, { backgroundColor: COLORS.primaryLight }]}>
+              <Text style={styles.planBadgeText}>PLAN PREMIUM</Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.menuSection}>
           <MenuItem 
-            icon={<CreditCard size={24} color={COLORS.primary} />} 
+            icon={CreditCard} 
             title={t('account.premium_plan') || "Plan Premium"} 
             onPress={() => navigation.navigate('Premium')}
           />
           <MenuItem 
-            icon={<User size={24} color={COLORS.primary} />} 
-            title={t('account.personal_data')} 
+            icon={User} 
+            title={t('account.personal_data') || "Datos Personales"} 
             onPress={() => navigation.navigate('AccountDetails')}
           />
           <MenuItem 
-            icon={<Settings size={24} color={COLORS.primary} />} 
+            icon={Settings} 
             title={t('common.settings')} 
             onPress={() => navigation.navigate('Settings')}
           />
           <MenuItem 
-            icon={<LogOut size={24} color={COLORS.status.locked} />} 
+            icon={LogOut} 
             title={t('common.logout')} 
             onPress={handleLogout}
             showChevron={false}
@@ -105,37 +132,29 @@ const AccountScreen = ({ navigation }) => {
       </View>
 
       {/* Bottom Nav */}
-      <View style={[styles.bottomNav, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
-          <Home size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
-          <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>{t('common.home')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Rooms')}>
-          <Users size={28} color={isDark ? COLORS.text.secondary : COLORS.secondary} />
-          <Text style={[styles.navText, { color: isDark ? COLORS.text.secondary : COLORS.secondary }]}>{t('common.rooms')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} activeOpacity={1}>
-          <User size={28} color={COLORS.primary} />
-          <Text style={[styles.navText, { color: COLORS.primary }]}>{t('common.account')}</Text>
-        </TouchableOpacity>
+      <View style={[styles.bottomNav, { backgroundColor: themeColors.surface, borderTopColor: themeColors.border }]}>
+        <NavButton icon={Home} label={t('common.home')} onPress={() => navigation.navigate('Home')} isDark={isDark} />
+        <NavButton icon={Users} label={t('common.rooms')} onPress={() => navigation.navigate('Rooms')} isDark={isDark} />
+        <NavButton icon={User} label={t('common.account')} active isDark={isDark} />
       </View>
     </SafeAreaView>
   );
 };
 
+const NavButton = ({ icon: Icon, label, active, onPress, isDark }) => {
+  const themeColors = isDark ? COLORS.dark : COLORS.light;
+  const color = active ? COLORS.primary : themeColors.textSecondary;
+  return (
+    <TouchableOpacity style={styles.navItem} onPress={onPress}>
+      <Icon size={24} color={color} strokeWidth={active ? 2.5 : 2} />
+      <Text style={[styles.navText, { color }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
-  },
-  header: {
-    paddingVertical: SPACING.lg,
-    alignItems: 'center',
-    paddingTop: 55,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
   },
   contentWrapper: {
     flex: 1,
@@ -144,40 +163,54 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   content: {
-    flex: 1,
     padding: SPACING.lg,
   },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.lg,
-    borderRadius: 16,
-    marginBottom: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    borderRadius: 24,
+    marginBottom: SPACING.xl,
+    borderWidth: 1,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    borderWidth: 4,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  avatarImage: {
+    width: 90, 
+    height: 90, 
   },
   userInfo: {
     marginLeft: SPACING.lg,
     flex: 1,
   },
   userName: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    ...TYPOGRAPHY.h2,
+    fontSize: 20,
   },
   userEmail: {
-    fontSize: 14,
-    marginTop: 5,
+    ...TYPOGRAPHY.caption,
+    marginTop: 2,
+  },
+  planBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  planBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: COLORS.primary,
+    letterSpacing: 0.5,
   },
   menuSection: {
     width: '100%',
@@ -187,44 +220,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: SPACING.md,
-    borderRadius: 16,
-    marginBottom: SPACING.sm + 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius: 20,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  menuIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
+  },
   menuItemText: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginLeft: 15,
+    ...TYPOGRAPHY.body,
+    fontWeight: '700',
   },
   bottomNav: {
     flexDirection: 'row',
-    height: 90,
+    height: Platform.OS === 'ios' ? 90 : 70,
+    borderTopWidth: 1,
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingBottom: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.06)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   navItem: {
     alignItems: 'center',
+    width: width / 3,
   },
   navText: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...TYPOGRAPHY.small,
     marginTop: 4,
+    fontWeight: '600',
   },
 });
 
