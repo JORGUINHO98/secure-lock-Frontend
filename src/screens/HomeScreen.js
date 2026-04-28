@@ -42,7 +42,7 @@ const HomeScreen = ({ navigation }) => {
       t('home.logout_title') || "Cerrar Sesión",
       t('home.logout_confirm') || "¿Estás seguro que quieres salir?",
       [
-        { text: t('common.cancel'), style: "cancel" },
+        { text: t('common.cancel') || "Cancelar", style: "cancel" },
         { text: t('common.exit') || "Salir", style: "destructive", onPress: () => {
           logout();
           navigation.navigate('Auth');
@@ -55,17 +55,7 @@ const HomeScreen = ({ navigation }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? themeColors.background : COLORS.secondary }]}>
       <StatusBar barStyle="light-content" />
 
-      <Header 
-        title={t('home.welcome_user', { name: user?.name?.split(' ')[0] || t('common.user') })}
-        showMenu
-        onMenu={() => setMenuVisible(true)}
-        isDark
-        rightElement={
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <LogOut size={20} color="#FFFFFF" />
-          </TouchableOpacity>
-        }
-      />
+
 
       <ImageBackground
         source={require('../../assets/background.png')}
@@ -73,6 +63,19 @@ const HomeScreen = ({ navigation }) => {
         resizeMode="cover"
       >
         <View style={[styles.backgroundOverlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(26, 31, 54, 0.7)' }]} />
+
+        <Header 
+          title={`Bienvenido: ${user?.name?.split(' ')[0] || 'Usuario'}`}
+          showMenu
+          onMenu={() => setMenuVisible(true)}
+          isDark
+          transparent
+          rightElement={
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <LogOut size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          }
+        />
 
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }}>
           <View style={styles.content}>
@@ -86,32 +89,24 @@ const HomeScreen = ({ navigation }) => {
                   resizeMode="contain"
                 />
               </View>
-              <Text style={styles.title}>{t('auth.title')}</Text>
-              <Text style={styles.subtitle}>{t('home.hero_subtitle')}</Text>
+              <Text style={styles.title}>SECURE LOCK</Text>
+              <Text style={styles.subtitle}>bloqueo total de dispositivos de forma remota</Text>
             </View>
 
             {/* Action Cards Container */}
-            <View style={[
-              styles.actionBox, 
-              { backgroundColor: themeColors.surface + 'CC' },
-              SHADOWS.medium
-            ]}>
-              <Text style={[styles.sectionTitle, { color: themeColors.text }]}>
-                {t('home.quick_actions') || "Acciones Rápidas"}
-              </Text>
-              
+            <View style={styles.actionBox}>
               <ActionCard
-                title={t('home.scan_qr')}
-                subtitle={t('home.scan_qr_sub')}
+                title={t('home.scan_qr') || "ESCANEAR QR"}
+                subtitle={t('home.scan_qr_sub') || "Vincular este dispositivo a una sala"}
                 icon={Smartphone}
                 variant="primary"
                 onPress={() => navigation.navigate('CameraScanner')}
               />
               <ActionCard
-                title={t('home.control_devices')}
-                subtitle={t('home.control_devices_sub') || "Gestiona tus espacios seguros"}
+                title={t('home.control_devices') || "CONTROLAR DISPOSITIVOS"}
+                subtitle={t('home.control_devices_sub') || "Gestiona y asegura tus salas"}
                 icon={Shield}
-                variant="accent"
+                variant="secondary"
                 onPress={() => navigation.navigate('Rooms')}
               />
             </View>
@@ -162,16 +157,16 @@ const HomeScreen = ({ navigation }) => {
           borderTopColor: themeColors.border 
         }
       ]}>
-        <NavButton icon={Home} label={t('common.home')} active isDark={isDark} />
+        <NavButton icon={Home} label={t('common.home') || "Inicio"} active isDark={isDark} />
         <NavButton 
           icon={Users} 
-          label={t('common.rooms')} 
+          label={t('common.rooms') || "Salas"} 
           onPress={() => navigation.navigate('Rooms')} 
           isDark={isDark}
         />
         <NavButton 
           icon={User} 
-          label={t('common.account')} 
+          label={t('common.account') || "Cuenta"} 
           onPress={() => navigation.navigate('Account')} 
           isDark={isDark}
         />
@@ -267,14 +262,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   actionBox: {
-    padding: SPACING.lg,
-    borderRadius: 32,
+    paddingHorizontal: SPACING.lg,
     marginTop: SPACING.md,
-  },
-  sectionTitle: {
-    ...TYPOGRAPHY.h3,
-    marginBottom: SPACING.md,
-    opacity: 0.9,
   },
   bottomNav: {
     flexDirection: 'row',

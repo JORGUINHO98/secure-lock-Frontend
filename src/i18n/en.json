@@ -34,7 +34,10 @@
     "scan_qr": "Scan QR",
     "scan_qr_sub": "Link this device to a room",
     "control_devices": "Control Devices",
-    "hero_subtitle": "total remote device locking"
+    "control_devices_sub": "Manage and secure your rooms",
+    "hero_subtitle": "total remote device locking",
+    "logout_title": "Logout",
+    "logout_confirm": "Are you sure you want to log out?"
   },
   "rooms": {
     "title": "My Rooms",
@@ -46,7 +49,9 @@
     "limit_reached": "Limit reached",
     "limit_reached_sub": "You reached the limit of free rooms. Go Premium to create unlimited rooms!",
     "delete_title": "Delete Room",
-    "delete_confirm": "Are you sure you want to delete this room?"
+    "delete_confirm": "Are you sure you want to delete this room?",
+    "room_name_label": "Room Name",
+    "add_first_room": "Create my first room"
   },
   "account": {
     "personal_data": "Personal Details",

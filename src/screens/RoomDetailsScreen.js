@@ -48,13 +48,13 @@ const RoomDetailsScreen = ({ route, navigation }) => {
       t('roomDetails.block_all_title') || "Bloquear toda la sala",
       t('roomDetails.block_all_confirm', { roomName }) || `¿Estás seguro que quieres bloquear todos los dispositivos de la sala "${roomName}"?`,
       [
-        { text: t('common.cancel'), style: "cancel" },
+        { text: t('common.cancel') || "Cancelar", style: "cancel" },
         { 
           text: t('roomDetails.block_all') || "Bloquear Todo", 
           style: "destructive", 
           onPress: async () => {
             await blockAllDevicesInRoom(roomId);
-            Alert.alert(t('common.success'), t('roomDetails.block_success') || "Todos los dispositivos de esta sala han sido bloqueados.");
+            Alert.alert(t('common.success') || "Éxito", t('roomDetails.block_success') || "Todos los dispositivos de esta sala han sido bloqueados.");
           }
         }
       ]
@@ -80,8 +80,8 @@ const RoomDetailsScreen = ({ route, navigation }) => {
         t('roomDetails.delete_device_title') || "Eliminar Dispositivo",
         t('roomDetails.delete_device_confirm') || "¿Estás seguro que quieres eliminar este dispositivo?",
         [
-            { text: t('common.cancel'), style: "cancel" },
-            { text: t('common.delete'), style: "destructive", onPress: () => deleteDevice(roomId, deviceId) }
+            { text: t('common.cancel') || "Cancelar", style: "cancel" },
+            { text: t('common.delete') || "Eliminar", style: "destructive", onPress: () => deleteDevice(roomId, deviceId) }
         ]
     );
   };
@@ -135,7 +135,7 @@ const RoomDetailsScreen = ({ route, navigation }) => {
                     </View>
                 )}
                 <TouchableOpacity onPress={() => navigation.navigate('DeviceControl', { roomId, deviceId: device.id, roomName })}>
-                    <Text style={[styles.verMasText, { color: COLORS.primary }]}>{t('common.viewMore')}</Text>
+                    <Text style={[styles.verMasText, { color: COLORS.primary }]}>{t('common.viewMore') || "Ver Más"}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -180,13 +180,13 @@ const RoomDetailsScreen = ({ route, navigation }) => {
                 style={[styles.modalButton, { backgroundColor: COLORS.status.locked }]} 
                 onPress={() => setEditModalVisible(false)}
               >
-                <Text style={[styles.buttonText, { color: COLORS.text.white }]}>{t('common.cancel')}</Text>
+                <Text style={[styles.buttonText, { color: COLORS.text.white }]}>{t('common.cancel') || "Cancelar"}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.modalButton, { backgroundColor: COLORS.primary }]} 
                 onPress={handleUpdateDevice}
               >
-                <Text style={[styles.buttonText, { color: COLORS.text.white }]}>{t('common.save')}</Text>
+                <Text style={[styles.buttonText, { color: COLORS.text.white }]}>{t('common.save') || "Guardar"}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -198,15 +198,15 @@ const RoomDetailsScreen = ({ route, navigation }) => {
       <View style={[styles.bottomNav, { backgroundColor: COLORS.background.surface }]}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
           <Home size={28} color={COLORS.secondary} />
-          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.home')}</Text>
+          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.home') || "Inicio"}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} activeOpacity={1}>
           <Users size={28} color={COLORS.primary} />
-          <Text style={[styles.navText, { color: COLORS.primary }]}>{t('common.rooms')}</Text>
+          <Text style={[styles.navText, { color: COLORS.primary }]}>{t('common.rooms') || "Salas"}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Account')}>
           <User size={28} color={COLORS.secondary} />
-          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.account')}</Text>
+          <Text style={[styles.navText, { color: COLORS.secondary }]}>{t('common.account') || "Cuenta"}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -215,7 +215,6 @@ const RoomDetailsScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     flex: 1,
   },
   header: {
@@ -223,8 +222,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 55,
-    paddingBottom: 20,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 15 : 25,
+    paddingBottom: 15,
   },
   headerTitle: {
     fontSize: 28,
@@ -250,11 +249,6 @@ const styles = StyleSheet.create({
     padding: 15,
     height: 120,
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 3,
   },
   deviceIconBox: {
     width: 80,
@@ -341,10 +335,10 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: 'row',
-    height: 90,
+    height: Platform.OS === 'ios' ? 90 : 70,
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingBottom: 16,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.06)',
     shadowColor: '#000',

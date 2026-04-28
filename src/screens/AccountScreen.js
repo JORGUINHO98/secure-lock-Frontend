@@ -25,11 +25,11 @@ const AccountScreen = ({ navigation }) => {
 
   const handleLogout = () => {
     Alert.alert(
-      t('common.logout'),
+      t('home.logout_title') || "Cerrar Sesión",
       t('home.logout_confirm') || "¿Estás seguro que quieres salir?",
       [
-        { text: t('common.cancel'), style: "cancel" },
-        { text: t('common.logout'), style: "destructive", onPress: () => {
+        { text: t('common.cancel') || "Cancelar", style: "cancel" },
+        { text: t('common.logout') || "Cerrar Sesión", style: "destructive", onPress: () => {
           logout();
           navigation.navigate('Auth');
         }}
@@ -70,10 +70,10 @@ const AccountScreen = ({ navigation }) => {
       <StatusBar barStyle="light-content" />
       
       <Header 
-        title={t('common.account')}
+        title={t('common.account') || "Mi Cuenta"}
         isDark={true}
       />
-      <View style={[styles.contentWrapper, { backgroundColor: themeColors.background }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
       <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 120 }}>
         {/* User Info Card */}
         <View style={[
@@ -93,7 +93,7 @@ const AccountScreen = ({ navigation }) => {
           </View>
           <View style={styles.userInfo}>
             <Text style={[styles.userName, { color: themeColors.text }]}>
-              {user?.name || user?.full_name || user?.username || t('common.user')}
+              {user?.name || user?.full_name || user?.username || t('common.user') || "Usuario"}
             </Text>
             <Text style={[styles.userEmail, { color: themeColors.textSecondary }]}>
               {user?.email || 'email@example.com'}
@@ -117,12 +117,12 @@ const AccountScreen = ({ navigation }) => {
           />
           <MenuItem 
             icon={Settings} 
-            title={t('common.settings')} 
+            title={t('common.settings') || "Configuración"} 
             onPress={() => navigation.navigate('Settings')}
           />
           <MenuItem 
             icon={LogOut} 
-            title={t('common.logout')} 
+            title={t('common.logout') || "Cerrar Sesión"} 
             onPress={handleLogout}
             showChevron={false}
             isDestructive
@@ -133,9 +133,9 @@ const AccountScreen = ({ navigation }) => {
 
       {/* Bottom Nav */}
       <View style={[styles.bottomNav, { backgroundColor: themeColors.surface, borderTopColor: themeColors.border }]}>
-        <NavButton icon={Home} label={t('common.home')} onPress={() => navigation.navigate('Home')} isDark={isDark} />
-        <NavButton icon={Users} label={t('common.rooms')} onPress={() => navigation.navigate('Rooms')} isDark={isDark} />
-        <NavButton icon={User} label={t('common.account')} active isDark={isDark} />
+        <NavButton icon={Home} label={t('common.home') || "Inicio"} onPress={() => navigation.navigate('Home')} isDark={isDark} />
+        <NavButton icon={Users} label={t('common.rooms') || "Salas"} onPress={() => navigation.navigate('Rooms')} isDark={isDark} />
+        <NavButton icon={User} label={t('common.account') || "Cuenta"} active isDark={isDark} />
       </View>
     </SafeAreaView>
   );

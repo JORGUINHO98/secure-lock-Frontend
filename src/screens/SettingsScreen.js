@@ -71,14 +71,22 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
 
-  const SettingItem = ({ icon: Icon, title, description, value, onValueChange, type = 'switch', onPress }) => (
+  const SettingItem = ({ icon: Icon, title, description, value, onValueChange, type = 'switch', onPress }) => {
+    const themeColors = isDark ? COLORS.dark : COLORS.light;
+    return (
     <TouchableOpacity
-      style={[styles.settingItem, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.offWhite }]}
+      style={[
+        styles.settingItem, 
+        { 
+          backgroundColor: themeColors.surface,
+          borderColor: themeColors.border
+        }
+      ]}
       onPress={onPress}
       disabled={type === 'switch'}
     >
-      <View style={styles.settingIconContainer}>
-        <Icon size={22} color={COLORS.primary} />
+      <View style={[styles.settingIconCircle, { backgroundColor: COLORS.primaryLight }]}>
+        <Icon size={20} color={COLORS.primary} />
       </View>
       <View style={styles.settingTextContainer}>
         <Text style={[styles.settingTitle, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>{title}</Text>
@@ -97,7 +105,8 @@ const SettingsScreen = ({ navigation }) => {
         </View>
       )}
     </TouchableOpacity>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
@@ -254,16 +263,12 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 20,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    borderWidth: 1,
   },
-  settingIconContainer: {
+  settingIconCircle: {
     width: 44,
     height: 44,
-    borderRadius: 12,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },

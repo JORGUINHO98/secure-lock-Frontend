@@ -15,32 +15,41 @@ import {
   Image,
   ActivityIndicator
 } from 'react-native';
-import { Undo2, User, Mail, Phone, MapPin, Save, Camera } from 'lucide-react-native';
+import { User, Mail, Phone, MapPin, Save, Camera } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { COLORS, SPACING } from '../theme/colors';
+import Header from '../components/Header';
 import api from '../services/api';
 import * as ImagePicker from 'expo-image-picker';
 
 const { width } = Dimensions.get('window');
 
-// InputField definido FUERA del componente para evitar que el teclado se cierre al escribir
-const InputField = ({ icon: Icon, label, value, onChangeText, keyboardType = 'default', editable = true, isDark = false }) => (
+const InputField = ({ icon: Icon, label, value, onChangeText, keyboardType = 'default', editable = true, isDark = false }) => {
+  const themeColors = isDark ? COLORS.dark : COLORS.light;
+  return (
   <View style={styles.inputContainer}>
-    <Text style={[styles.label, { color: isDark ? COLORS.text.secondary : COLORS.text.secondary }]}>{label}</Text>
-    <View style={[styles.inputWrapper, { backgroundColor: isDark ? (editable ? '#2A2F45' : '#1E2338') : (editable ? COLORS.background.offWhite : '#EAEEF3') }]}>
+    <Text style={[styles.label, { color: themeColors.textSecondary }]}>{label}</Text>
+    <View style={[
+      styles.inputWrapper, 
+      { 
+        backgroundColor: editable ? themeColors.surface : (isDark ? '#1E2338' : '#EAEEF3'),
+        borderColor: themeColors.border,
+      }
+    ]}>
       <Icon size={20} color={editable ? COLORS.primary : COLORS.text.secondary} style={styles.inputIcon} />
       <TextInput
-        style={[styles.input, { color: isDark ? (editable ? COLORS.text.white : COLORS.text.secondary) : (editable ? COLORS.text.main : COLORS.text.secondary) }]}
+        style={[styles.input, { color: editable ? themeColors.text : themeColors.textSecondary }]}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
-        placeholderTextColor={COLORS.text.secondary}
+        placeholderTextColor={themeColors.textSecondary}
         editable={editable}
       />
     </View>
   </View>
-);
+  );
+};
 
 const AccountDetailsScreen = ({ navigation }) => {
   const { theme, user, setUser } = useAppContext();
@@ -246,13 +255,12 @@ const AccountDetailsScreen = ({ navigation }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
       <StatusBar barStyle="light-content" />
 
-      <View style={[styles.header, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Undo2 size={32} color={COLORS.text.white} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>{t('account.personal_data')}</Text>
-        <View style={{ width: 32 }} />
-      </View>
+      <Header 
+        title={t('account.personal_data')}
+        showBack
+        onBack={() => navigation.goBack()}
+        isDark={true}
+      />
 
       <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
         <KeyboardAvoidingView
@@ -334,23 +342,8 @@ const AccountDetailsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 55,
-    paddingBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  backButton: {
-    padding: 5,
-  },
+
   contentWrapper: {
     flex: 1,
     borderTopLeftRadius: 30,
@@ -419,11 +412,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingHorizontal: 15,
     height: 60,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    borderWidth: 1,
   },
   inputIcon: {
     marginRight: 12,
@@ -440,11 +429,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 6,
   },
   saveButtonText: {
     color: '#FFF',

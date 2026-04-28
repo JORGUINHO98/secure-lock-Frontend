@@ -53,16 +53,7 @@ const QRCodeScreen = ({ route, navigation }) => {
     fetchQR();
   }, [roomId]);
 
-  const generateNewId = useCallback(() => {
-    setIsLoading(true);
-    // Usar un ID más corto para que el QR sea más simple y rápido de renderizar
-    const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    // Pequeño timeout para mostrar el loading y dejar que React procese
-    setTimeout(() => {
-      setQrCodeData(`SL-${shortId}`);
-      setIsLoading(false);
-    }, 150);
-  }, []);
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
@@ -76,6 +67,7 @@ const QRCodeScreen = ({ route, navigation }) => {
         <Text style={[styles.headerTitle, { color: COLORS.text.white }]}>QR de Sala</Text>
         <View style={{ width: 32 }} />
       </View>
+
 
       <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
@@ -107,15 +99,12 @@ const QRCodeScreen = ({ route, navigation }) => {
             </View>
 
             {/* Device ID Display */}
-            <View style={[styles.idContainer, { backgroundColor: isDark ? '#2A2F45' : COLORS.background.offWhite }]}>
-                <Text style={[styles.idLabel, { color: COLORS.text.secondary }]}>ID del Dispositivo</Text>
-                <Text style={[styles.idValue, { color: isDark ? COLORS.text.white : COLORS.text.main }]}>{qrCodeData}</Text>
+            <View style={[styles.idContainer, { backgroundColor: '#FAFAFA' }]}>
+                <Text style={styles.idLabel}>ID DEL DISPOSITIVO</Text>
+                <Text style={styles.idValue}>{qrCodeData}</Text>
             </View>
 
-            {/* Generate New Button */}
-            <TouchableOpacity style={[styles.generateButton, { backgroundColor: isDark ? COLORS.accent : COLORS.primary }]} onPress={generateNewId}>
-                <Text style={styles.generateButtonText}>Generar Nuevo QR</Text>
-            </TouchableOpacity>
+
             </View>
         </ScrollView>
       </View>
@@ -126,15 +115,14 @@ const QRCodeScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 55,
-    paddingBottom: 20,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 15 : 25,
+    paddingBottom: 15,
   },
   headerTitle: {
     fontSize: 24,
@@ -186,38 +174,24 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
+    backgroundColor: '#FAFAFA',
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: '#EEEEEE',
   },
   idLabel: {
     fontSize: 12,
-    fontWeight: 'bold',
+    color: '#888',
     textTransform: 'uppercase',
     letterSpacing: 1,
+    marginBottom: 5,
   },
   idValue: {
     fontSize: 14,
-    fontWeight: '600',
-    marginTop: 5,
+    color: '#555',
   },
-  generateButton: {
-    width: '100%',
-    height: 60,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  generateButtonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+
+
 });
 
 export default QRCodeScreen;

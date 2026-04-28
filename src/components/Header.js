@@ -10,7 +10,8 @@ const Header = ({
   showMenu = false, 
   onMenu,
   rightElement,
-  isDark = false
+  isDark = false,
+  transparent = false
 }) => {
   const themeColors = isDark ? COLORS.dark : COLORS.light;
   const textColor = isDark ? '#FFFFFF' : themeColors.text;
@@ -19,9 +20,9 @@ const Header = ({
     <View style={[
       styles.header, 
       { 
-        backgroundColor: isDark ? COLORS.secondary : themeColors.background,
-        borderBottomColor: isDark ? 'transparent' : themeColors.border,
-        borderBottomWidth: isDark ? 0 : 1
+        backgroundColor: transparent ? 'transparent' : (isDark ? COLORS.secondary : themeColors.background),
+        borderBottomColor: transparent || isDark ? 'transparent' : themeColors.border,
+        borderBottomWidth: transparent || isDark ? 0 : 1
       }
     ]}>
       <View style={styles.leftContainer}>
@@ -56,9 +57,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.md,
-    height: Platform.OS === 'ios' ? 70 : 80,
-    paddingTop: Platform.OS === 'android' ? 10 : 10,
-    paddingBottom: 10,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 15 : 25,
+    paddingBottom: 15,
   },
   leftContainer: {
     width: 50,

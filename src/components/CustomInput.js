@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
-import { COLORS, SPACING, TYPOGRAPHY } from '../theme/colors';
+import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../theme/colors';
 import { useAppContext } from '../context/AppContext';
 
 const CustomInput = ({ 

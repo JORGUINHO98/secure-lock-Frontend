@@ -37,7 +37,7 @@ const RoomsScreen = ({ navigation }) => {
         t('rooms.limit_reached') || "Límite alcanzado",
         t('rooms.limit_reached_sub') || "Suscríbete a Premium para crear más salas.",
         [
-          { text: t('common.cancel'), style: "cancel" },
+          { text: t('common.cancel') || "Cancelar", style: "cancel" },
           { text: "Premium", onPress: () => navigation.navigate('Premium') }
         ]
       );
@@ -83,8 +83,8 @@ const RoomsScreen = ({ navigation }) => {
       t('rooms.delete_title') || "¿Eliminar Sala?",
       t('rooms.delete_confirm') || "¿Estás seguro que deseas eliminar esta sala?",
       [
-        { text: t('common.cancel'), style: "cancel" },
-        { text: t('common.delete'), style: "destructive", onPress: () => deleteRoom(id) }
+        { text: t('common.cancel') || "Cancelar", style: "cancel" },
+        { text: t('common.delete') || "Eliminar", style: "destructive", onPress: () => deleteRoom(id) }
       ]
     );
   };
@@ -94,12 +94,12 @@ const RoomsScreen = ({ navigation }) => {
       <StatusBar barStyle="light-content" />
 
       <Header 
-        title={t('rooms.title')}
+        title={t('rooms.title') || "Mis Salas"}
         showBack
         onBack={() => navigation.goBack()}
         isDark={true}
       />
-      <View style={[styles.contentWrapper, { backgroundColor: themeColors.background }]}>
+      <View style={[styles.contentWrapper, { backgroundColor: isDark ? '#1A1A2E' : COLORS.background.surface }]}>
 
       <ScrollView 
         style={styles.content} 
@@ -110,8 +110,8 @@ const RoomsScreen = ({ navigation }) => {
             <View style={[styles.emptyIconContainer, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
               <Users size={48} color={isDark ? COLORS.textSecondary : '#94A3B8'} />
             </View>
-            <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t('rooms.no_rooms')}</Text>
-            <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary }]}>{t('rooms.no_rooms_sub')}</Text>
+            <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t('rooms.no_rooms') || "No hay salas"}</Text>
+            <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary }]}>{t('rooms.no_rooms_sub') || "Comienza creando tu primera sala segura."}</Text>
             
             <TouchableOpacity 
               style={[styles.emptyButton, { backgroundColor: COLORS.primary }]}
@@ -149,19 +149,19 @@ const RoomsScreen = ({ navigation }) => {
       <View style={[styles.bottomNav, { backgroundColor: themeColors.surface, borderTopColor: themeColors.border }]}>
         <NavButton 
           icon={Home} 
-          label={t('common.home')} 
+          label={t('common.home') || "Inicio"} 
           onPress={() => navigation.navigate('Home')} 
           isDark={isDark} 
         />
         <NavButton 
           icon={Users} 
-          label={t('common.rooms')} 
+          label={t('common.rooms') || "Salas"} 
           active 
           isDark={isDark} 
         />
         <NavButton 
           icon={User} 
-          label={t('common.account')} 
+          label={t('common.account') || "Cuenta"} 
           onPress={() => navigation.navigate('Account')} 
           isDark={isDark} 
         />
@@ -171,17 +171,17 @@ const RoomsScreen = ({ navigation }) => {
       <CustomModal
         visible={createModalVisible}
         onClose={() => setCreateModalVisible(false)}
-        title={t('rooms.new_room')}
-        primaryLabel={t('common.create')}
+        title={t('rooms.new_room') || "Nueva Sala"}
+        primaryLabel={t('common.create') || "Crear"}
         primaryAction={handleCreateRoom}
-        secondaryLabel={t('common.cancel')}
+        secondaryLabel={t('common.cancel') || "Cancelar"}
         isLoading={isLoading}
       >
         <CustomInput
           label={t('rooms.room_name_label') || "Nombre de la Sala"}
           value={roomNameInput}
           onChangeText={setRoomNameInput}
-          placeholder={t('rooms.room_name_placeholder')}
+          placeholder={t('rooms.room_name_placeholder') || "Ej: Sala Principal"}
           autoFocus
         />
       </CustomModal>
@@ -190,17 +190,17 @@ const RoomsScreen = ({ navigation }) => {
       <CustomModal
         visible={editModalVisible}
         onClose={() => setEditModalVisible(false)}
-        title={t('rooms.edit_room')}
-        primaryLabel={t('common.save')}
+        title={t('rooms.edit_room') || "Editar Sala"}
+        primaryLabel={t('common.save') || "Guardar"}
         primaryAction={handleUpdateRoom}
-        secondaryLabel={t('common.cancel')}
+        secondaryLabel={t('common.cancel') || "Cancelar"}
         isLoading={isLoading}
       >
         <CustomInput
           label={t('rooms.room_name_label') || "Nombre de la Sala"}
           value={roomNameInput}
           onChangeText={setRoomNameInput}
-          placeholder={t('rooms.room_name_placeholder')}
+          placeholder={t('rooms.room_name_placeholder') || "Ej: Sala Principal"}
           autoFocus
         />
       </CustomModal>

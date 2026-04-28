@@ -68,7 +68,7 @@ const ActionCard = ({ title, subtitle, icon: Icon, variant = 'default', onPress,
         </View>
         
         <View style={styles.textContainer}>
-          <Text style={[styles.title, { color: titleColor }]}>{title}</Text>
+          <Text style={[styles.title, { color: titleColor }]} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
           {subtitle && (
             <Text style={[styles.subtitle, { color: subtitleColor }]} numberOfLines={2}>
               {subtitle}

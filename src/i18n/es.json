@@ -34,7 +34,10 @@
     "scan_qr": "Escanear QR",
     "scan_qr_sub": "Vincular este dispositivo a una sala",
     "control_devices": "Controlar Dispositivos",
-    "hero_subtitle": "bloqueo total de dispositivos de forma remota"
+    "control_devices_sub": "Gestiona y asegura tus salas",
+    "hero_subtitle": "bloqueo total de dispositivos de forma remota",
+    "logout_title": "Cerrar Sesión",
+    "logout_confirm": "¿Estás seguro que quieres salir?"
   },
   "rooms": {
     "title": "Mis Salas",
@@ -46,7 +49,9 @@
     "limit_reached": "Límite alcanzado",
     "limit_reached_sub": "Alcanzaste el límite de salas gratuitas. ¡Hazte Premium para crear salas ilimitadas!",
     "delete_title": "Eliminar Sala",
-    "delete_confirm": "¿Estás seguro que quieres eliminar esta sala?"
+    "delete_confirm": "¿Estás seguro que quieres eliminar esta sala?",
+    "room_name_label": "Nombre de la Sala",
+    "add_first_room": "Crear mi primera sala"
   },
   "account": {
     "personal_data": "Datos Personales",

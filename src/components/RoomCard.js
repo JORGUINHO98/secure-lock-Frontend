@@ -11,15 +11,7 @@ const RoomCard = ({ room, onEdit, onDelete, onPress }) => {
 
   const getIcon = () => {
     const iconSize = 32;
-    const iconColor = COLORS.primary;
-    
-    // Simple logic for dynamic icons based on name
-    const name = room.name.toLowerCase();
-    if (name.includes('sala') || name.includes('living')) return <Layout size={iconSize} color={iconColor} />;
-    if (name.includes('cuarto') || name.includes('habitación') || name.includes('bedroom')) return <Home size={iconSize} color={iconColor} />;
-    if (name.includes('oficina') || name.includes('office')) return <Smartphone size={iconSize} color={iconColor} />;
-    
-    return <Shield size={iconSize} color={iconColor} />;
+    return <Shield size={iconSize} color="#FFFFFF" />;
   };
 
   return (
@@ -31,11 +23,10 @@ const RoomCard = ({ room, onEdit, onDelete, onPress }) => {
         { 
           backgroundColor: themeColors.surface,
           borderColor: themeColors.border,
-        },
-        SHADOWS.small
+        }
       ]}
     >
-      <View style={[styles.iconWrapper, { backgroundColor: COLORS.primaryLight }]}>
+      <View style={[styles.iconWrapper, { backgroundColor: COLORS.primary }]}>
         {getIcon()}
       </View>
       
@@ -46,22 +37,19 @@ const RoomCard = ({ room, onEdit, onDelete, onPress }) => {
           </Text>
           <View style={styles.actions}>
             <TouchableOpacity onPress={onEdit} style={styles.actionBtn}>
-              <Pencil size={18} color={COLORS.primary} />
+              <Pencil size={20} color={COLORS.primary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={onDelete} style={styles.actionBtn}>
-              <Trash2 size={18} color={COLORS.status.locked} />
+              <Trash2 size={20} color={COLORS.status.locked} />
             </TouchableOpacity>
           </View>
         </View>
         
         <View style={styles.footer}>
-          <Text style={[styles.deviceCount, { color: themeColors.textSecondary }]}>
-            {room.deviceCount || 0} dispositivos
-          </Text>
-          <View style={styles.viewMore}>
-            <Text style={styles.viewMoreText}>Ver detalles</Text>
-            <ChevronRight size={16} color={COLORS.primary} />
-          </View>
+          <View />
+          <TouchableOpacity onPress={onPress} style={styles.viewMore}>
+            <Text style={styles.viewMoreText}>Ver Más</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -72,64 +60,56 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     padding: SPACING.md,
-    borderRadius: 20,
+    borderRadius: 16,
     marginHorizontal: SPACING.md,
     marginBottom: SPACING.md,
     borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
+    width: 80,
+    height: 80,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
   },
   content: {
     flex: 1,
-    height: 64,
+    height: 80,
     justifyContent: 'space-between',
+    paddingVertical: 5,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   name: {
     ...TYPOGRAPHY.h3,
+    fontSize: 20,
     flex: 1,
   },
   actions: {
     flexDirection: 'row',
   },
   actionBtn: {
-    padding: SPACING.sm,
-    marginLeft: SPACING.sm,
-    backgroundColor: 'rgba(150, 150, 150, 0.15)',
-    borderRadius: 12,
+    padding: 4,
+    marginLeft: SPACING.md,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  deviceCount: {
-    ...TYPOGRAPHY.caption,
+    alignItems: 'flex-end',
   },
   viewMore: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: `${COLORS.primary}15`,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingVertical: 4,
   },
   viewMoreText: {
-    ...TYPOGRAPHY.small,
-    fontWeight: '700',
+    fontSize: 16,
     color: COLORS.primary,
-    marginRight: 2,
   },
 });
 
