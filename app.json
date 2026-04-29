@@ -26,18 +26,16 @@
         "android.permission.CAMERA",
         "android.permission.WAKE_LOCK"
       ],
-
       "package": "com.anonymous.SecureLock"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-barcode-scanner",
       "expo-secure-store",
       "expo-screen-orientation",
-      "expo-navigation-bar"
+      "expo-navigation-bar",
+      "expo-localization"
     ]
-
   }
 }

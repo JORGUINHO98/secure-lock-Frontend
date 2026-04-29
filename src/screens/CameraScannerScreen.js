@@ -163,7 +163,7 @@ const CameraScannerScreen = ({ route, navigation }) => {
         style={StyleSheet.absoluteFillObject}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
         barcodeScannerSettings={{
-          barcodeTypes: ["qr"],
+          barcodeTypes: ["qr", "ean13", "code128", "code39", "ean8", "upc_a", "upc_e"],
         }}
       />
       <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
