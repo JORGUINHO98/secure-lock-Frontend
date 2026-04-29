@@ -44,7 +44,7 @@ const HomeScreen = ({ navigation }) => {
       t('home.logout_confirm') || "¿Estás seguro que quieres salir?",
       [
         { text: t('common.cancel') || "Cancelar", style: "cancel" },
-        { text: t('common.exit') || "Salir", style: "destructive", onPress: () => {
+        { text: t('CERRAR SESIÓN') || "Salir", style: "destructive", onPress: () => {
           logout();
           navigation.navigate('Auth');
         }}
@@ -92,7 +92,6 @@ const HomeScreen = ({ navigation }) => {
                 />
               </View>
               <Text style={styles.title}>SECURE LOCK</Text>
-              <Text style={styles.subtitle}>bloqueo total de dispositivos de forma remota</Text>
             </View>
 
             {/* Action Cards Container */}

@@ -170,7 +170,7 @@ const AccountDetailsScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.log('[FOTO] Error subiendo foto al backend:', error.message);
-      Alert.alert('Advertencia', 'No se pudo subir la foto al servidor. Se mostrará localmente hasta reiniciar.');
+      // Alert.alert('Advertencia', 'No se pudo subir la foto al servidor. Se mostrará localmente hasta reiniciar.');
       // Guardar URI local como fallback
       setUser(prev => ({ ...prev, avatar: uri }));
     } finally {
@@ -243,10 +243,10 @@ const AccountDetailsScreen = ({ navigation }) => {
       }));
 
       const errMsg = error.response?.data?.detail || error.response?.data?.error || 'Sin conexión con el servidor.';
-      Alert.alert(
-        'Guardado parcialmente',
-        `Los cambios se guardaron en tu dispositivo, pero no en el servidor: ${errMsg}`
-      );
+      // Alert.alert(
+      //   'Guardado parcialmente',
+      //   `Los cambios se guardaron en tu dispositivo, pero no en el servidor: ${errMsg}`
+      // );
       navigation.goBack();
     }
   };
