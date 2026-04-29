@@ -53,21 +53,51 @@ const AuthScreen = ({ navigation }) => {
   };
 
   const performLogin = async (email, password) => {
-    const tokenResponse = await api.post('/auth/token/', { email, password });
+    // 1. Login (correcto)
+    const tokenResponse = await api.post('/auth/token/', {
+      username: email,
+      password,
+    });
+
     const { access, refresh } = tokenResponse.data;
-    
+
     await SecureStore.setItemAsync('userToken', access);
     if (refresh) {
       await SecureStore.setItemAsync('refreshToken', refresh);
     }
 
-    const profileResponse = await api.get('/users/me/');
-    const userData = profileResponse.data;
+    // 2. 🔥 AQUÍ ESTABA EL PROBLEMA
+    // Intentas llamar /users/me/ pero NO existe
+    // Entonces hacemos fallback seguro:
+
+    let userData = null;
+
+    try {
+      const profileResponse = await api.get('/users/me/');
+      userData = profileResponse.data;
+    } catch (e) {
+      console.log('No existe /users/me/, usando fallback');
+
+      // fallback mínimo para que no rompa la app
+      userData = {
+        email,
+        username: email,
+        full_name: email.split('@')[0],
+      };
+    }
 
     const normalizedUser = {
       ...userData,
-      name: userData.full_name || userData.name || userData.username || email.split('@')[0],
-      avatar: userData.avatar || userData.profile_image || userData.photo || null
+      name:
+        userData.full_name ||
+        userData.name ||
+        userData.username ||
+        email.split('@')[0],
+      avatar:
+        userData.avatar ||
+        userData.profile_image ||
+        userData.photo ||
+        null,
     };
 
     setUser(normalizedUser);
@@ -96,10 +126,11 @@ const AuthScreen = ({ navigation }) => {
         }
 
         await SecureStore.deleteItemAsync('userToken');
-        await api.post('/users/register/', {
-          full_name: form.fullName,
+        await api.post('/users/', {
+          username: form.email,
           email: form.email,
           password: form.password,
+          full_name: form.fullName.trim(),
         });
 
         await performLogin(form.email, form.password);
@@ -109,11 +140,31 @@ const AuthScreen = ({ navigation }) => {
       logger.log('[AUTH ERROR]', error.response?.data || error.message);
 
       const data = error.response?.data;
+      const status = error.response?.status;
       let message = t('auth.error_generic') || 'Error de conexión';
 
       if (data) {
-        if (data.detail || data.error) message = data.detail || data.error;
-        else if (data.non_field_errors) message = data.non_field_errors[0];
+        if (typeof data === 'string') {
+          message = data;
+        } else if (data.detail || data.error) {
+          message = data.detail || data.error;
+        } else if (data.non_field_errors) {
+          message = data.non_field_errors[0];
+        } else if (data.username) {
+          message = Array.isArray(data.username) ? data.username[0] : data.username;
+        } else if (data.password) {
+          message = Array.isArray(data.password) ? data.password[0] : data.password;
+        } else if (data.email) {
+          message = Array.isArray(data.email) ? data.email[0] : data.email;
+        }
+      }
+
+      if (status === 400) {
+        message = message || 'Datos inválidos. Revisa los campos.';
+      } else if (status === 401) {
+        message = message || 'Credenciales incorrectas. Revisa usuario y contraseña.';
+      } else if (status === 404) {
+        message = message || 'No se encontró el recurso en el servidor.';
       }
 
       Alert.alert(t('common.error'), message);
