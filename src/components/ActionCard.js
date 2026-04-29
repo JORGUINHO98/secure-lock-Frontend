@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { TouchableOpacity, Text, StyleSheet, View, Animated } from 'react-native';
 import { COLORS, SPACING, SHADOWS, TYPOGRAPHY } from '../theme/colors';
 import { ChevronRight } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
 
-const ActionCard = ({ title, subtitle, icon: Icon, variant = 'default', onPress, accentColor }) => {
+const ActionCard = memo(({ title, subtitle, icon: Icon, variant = 'default', onPress, accentColor }) => {
   const { theme } = useAppContext();
   const isDark = theme === 'dark';
   const themeColors = isDark ? COLORS.dark : COLORS.light;
@@ -85,9 +85,11 @@ const ActionCard = ({ title, subtitle, icon: Icon, variant = 'default', onPress,
       </TouchableOpacity>
     </Animated.View>
   );
-};
+});
 
 const styles = StyleSheet.create({
+// ... (rest of styles)
+
   container: {
     flexDirection: 'row',
     alignItems: 'center',

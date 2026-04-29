@@ -79,7 +79,8 @@
     "block_all_room": "Bloquear Sala Inteira",
     "show_qr": "Mostrar QR da Sala",
     "edit_device": "Editar Dispositivo",
-    "device_name_placeholder": "Nome do dispositivo..."
+    "device_name_placeholder": "Nome do dispositivo...",
+    "no_devices": "Não há dispositivos nesta sala"
   },
   "lock": {
     "device_free": "Dispositivo Livre",

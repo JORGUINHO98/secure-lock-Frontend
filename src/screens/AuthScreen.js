@@ -18,14 +18,20 @@ import { User, Mail, Lock } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../theme/colors';
 import CustomInput from '../components/CustomInput';
-import { useAppContext } from '../context/AppContext';
+import { useAuth, useTheme } from '../context';
 import api from '../services/api';
+
+import logger from '../utils/logger';
+import { validateEmail } from '../utils/validators';
+
 
 const { width } = Dimensions.get('window');
 
 const AuthScreen = ({ navigation }) => {
-  const { setUser, theme } = useAppContext();
+  const { setUser } = useAuth();
+  const { theme } = useTheme();
   const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState('register');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -48,8 +54,12 @@ const AuthScreen = ({ navigation }) => {
 
   const performLogin = async (email, password) => {
     const tokenResponse = await api.post('/auth/token/', { email, password });
-    const { access } = tokenResponse.data;
+    const { access, refresh } = tokenResponse.data;
+    
     await SecureStore.setItemAsync('userToken', access);
+    if (refresh) {
+      await SecureStore.setItemAsync('refreshToken', refresh);
+    }
 
     const profileResponse = await api.get('/users/me/');
     const userData = profileResponse.data;
@@ -74,7 +84,9 @@ const AuthScreen = ({ navigation }) => {
         const newErrors = {};
         if (!form.fullName.trim()) newErrors.fullName = t('auth.error_name') || 'El nombre es obligatorio';
         if (!form.email.trim()) newErrors.email = t('auth.error_email') || 'El correo es obligatorio';
+        else if (!validateEmail(form.email)) newErrors.email = t('auth.error_email_invalid') || 'Correo inválido';
         if (form.password.length < 6) newErrors.password = t('auth.error_pass_short') || 'Mínimo 6 caracteres';
+
         if (form.password !== form.confirmPassword) newErrors.confirmPassword = t('auth.error_pass_mismatch') || 'No coinciden';
 
         if (Object.keys(newErrors).length > 0) {
@@ -94,7 +106,8 @@ const AuthScreen = ({ navigation }) => {
       }
       navigation.navigate('Home');
     } catch (error) {
-      console.log('[AUTH ERROR]', error.response?.data);
+      logger.log('[AUTH ERROR]', error.response?.data || error.message);
+
       const data = error.response?.data;
       let message = t('auth.error_generic') || 'Error de conexión';
 

@@ -6,13 +6,14 @@ import {
   StyleSheet, 
   ImageBackground, 
   TouchableOpacity, 
-  SafeAreaView,
+
   StatusBar,
   Dimensions,
   ScrollView,
   ActivityIndicator,
   Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppContext } from '../context/AppContext';
 import { CheckCircle2, Undo2, X } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';

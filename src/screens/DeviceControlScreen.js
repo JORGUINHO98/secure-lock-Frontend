@@ -3,18 +3,21 @@ import { Platform, View,
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  SafeAreaView, 
   StatusBar,
   Dimensions,
   Alert,
   ActivityIndicator,
   ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Shield, Smartphone, Clock, Lock, Unlock, Home, Users, User } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../theme/colors';
 import Header from '../components/Header';
 import InfoCard from '../components/InfoCard';
 import CustomModal from '../components/CustomModal';
+import { useKioskMode } from '../hooks/useKioskMode';
+
+
 
 const { width } = Dimensions.get('window');
 
@@ -24,12 +27,38 @@ const DeviceControlScreen = ({ route, navigation }) => {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [tapCount, setTapCount] = useState(0);
+
+  // Use the Kiosk Mode hook
+  const { isActive: kioskActive, activateKioskMode, deactivateKioskMode } = useKioskMode();
+
+  // Sync Kiosk mode with lock status
+  React.useEffect(() => {
+    if (isLocked) {
+      activateKioskMode();
+    }
+  }, [isLocked, activateKioskMode]);
+
+  // Handle secret gesture (5 taps) to exit Kiosk mode
+  const handleSecretGesture = () => {
+    const newCount = tapCount + 1;
+    if (newCount >= 5) {
+      deactivateKioskMode();
+      setTapCount(0);
+      Alert.alert("Admin", "Modo Kiosk desactivado manualmente.");
+    } else {
+      setTapCount(newCount);
+      setTimeout(() => setTapCount(0), 2000);
+    }
+  };
+
+
+
   const isDark = theme === 'dark';
   const themeColors = isDark ? COLORS.dark : COLORS.light;
   
   const room = rooms.find(r => r.id === roomId);
   const roomName = paramRoomName || (room ? room.name : 'Sala');
-  const device = roomDevices[roomId]?.find(d => d.id === deviceId);
 
   if (!device) {
     return (
@@ -53,7 +82,7 @@ const DeviceControlScreen = ({ route, navigation }) => {
     try {
         await toggleDeviceStatus(roomId, deviceId, 'Bloqueado');
     } catch (error) {
-        Alert.alert("Error", "No se pudo bloquear el dispositivo");
+        Alert.alert("Error", error.friendlyMessage || "No se pudo bloquear el dispositivo");
     } finally {
         setIsLoading(false);
     }
@@ -65,13 +94,13 @@ const DeviceControlScreen = ({ route, navigation }) => {
     try {
         await toggleDeviceStatus(roomId, deviceId, 'Activo');
     } catch (error) {
-        Alert.alert("Error", "No se pudo desbloquear el dispositivo");
+        Alert.alert("Error", error.friendlyMessage || "No se pudo desbloquear el dispositivo");
     } finally {
         setIsLoading(false);
     }
   };
 
-  const isLocked = device.status === 'Bloqueado';
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#0D1120' : COLORS.secondary }]}>
@@ -100,12 +129,17 @@ const DeviceControlScreen = ({ route, navigation }) => {
             </View>
           </View>
           
-          <View style={styles.statusBadge}>
+          <TouchableOpacity 
+            activeOpacity={0.7} 
+            onPress={handleSecretGesture}
+            style={styles.statusBadge}
+          >
             {isLocked ? <Lock size={16} color="#FFF" /> : <Unlock size={16} color="#FFF" />}
             <Text style={styles.statusBadgeText}>
               {isLocked ? 'SISTEMA BLOQUEADO' : 'SISTEMA ACTIVO'}
             </Text>
-          </View>
+          </TouchableOpacity>
+
         </View>
 
         {/* Info Cards */}
@@ -161,6 +195,15 @@ const DeviceControlScreen = ({ route, navigation }) => {
         </View>
       </ScrollView>
       </View>
+
+      {/* Lock Mode Indicator */}
+      {kioskActive && (
+        <View style={styles.lockIndicator}>
+          <Lock size={14} color="#FF3B30" />
+        </View>
+      )}
+
+
 
       {/* Confirmation Modal */}
       <CustomModal
@@ -306,6 +349,18 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: '600',
   },
+  lockIndicator: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    right: 20,
+    backgroundColor: 'rgba(255, 59, 48, 0.1)',
+    padding: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 59, 48, 0.3)',
+    zIndex: 999,
+  },
 });
+
 
 export default DeviceControlScreen;

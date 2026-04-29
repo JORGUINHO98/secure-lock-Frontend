@@ -79,7 +79,8 @@
     "block_all_room": "Block Entire Room",
     "show_qr": "Show Room QR",
     "edit_device": "Edit Device",
-    "device_name_placeholder": "Device name..."
+    "device_name_placeholder": "Device name...",
+    "no_devices": "No devices in this room"
   },
   "lock": {
     "device_free": "Device Free",

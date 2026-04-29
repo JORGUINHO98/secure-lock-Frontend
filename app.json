@@ -21,14 +21,23 @@
         "backgroundColor": "#ffffff"
       },
       "usesCleartextTraffic": true,
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.WAKE_LOCK"
+      ],
+
+      "package": "com.anonymous.SecureLock"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-barcode-scanner",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-screen-orientation",
+      "expo-navigation-bar"
     ]
+
   }
 }

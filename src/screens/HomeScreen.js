@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
+
 import { Platform, View,
   Text,
   StyleSheet,
   ImageBackground,
   Image,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Dimensions,
   Alert,
   ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Menu,
   LogOut,
@@ -37,7 +38,7 @@ const HomeScreen = ({ navigation }) => {
   const isDark = theme === 'dark';
   const themeColors = isDark ? COLORS.dark : COLORS.light;
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     Alert.alert(
       t('home.logout_title') || "Cerrar Sesión",
       t('home.logout_confirm') || "¿Estás seguro que quieres salir?",
@@ -49,7 +50,8 @@ const HomeScreen = ({ navigation }) => {
         }}
       ]
     );
-  };
+  }, [t, logout, navigation]);
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: isDark ? themeColors.background : COLORS.secondary }]}>
@@ -175,7 +177,7 @@ const HomeScreen = ({ navigation }) => {
   );
 };
 
-const MenuItem = ({ icon: Icon, label, onPress, isDark, isDestructive }) => {
+const MenuItem = memo(({ icon: Icon, label, onPress, isDark, isDestructive }) => {
   const themeColors = isDark ? COLORS.dark : COLORS.light;
   return (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
@@ -193,9 +195,10 @@ const MenuItem = ({ icon: Icon, label, onPress, isDark, isDestructive }) => {
       </Text>
     </TouchableOpacity>
   );
-};
+});
 
-const NavButton = ({ icon: Icon, label, active, onPress, isDark }) => {
+
+const NavButton = memo(({ icon: Icon, label, active, onPress, isDark }) => {
   const themeColors = isDark ? COLORS.dark : COLORS.light;
   const color = active ? COLORS.primary : themeColors.textSecondary;
   return (
@@ -204,7 +207,8 @@ const NavButton = ({ icon: Icon, label, active, onPress, isDark }) => {
       <Text style={[styles.navText, { color }]}>{label}</Text>
     </TouchableOpacity>
   );
-};
+});
+
 
 const styles = StyleSheet.create({
   container: {

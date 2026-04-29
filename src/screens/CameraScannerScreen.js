@@ -5,12 +5,28 @@ import { X } from 'lucide-react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import { validateUUID } from '../utils/validators';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useKioskMode } from '../hooks/useKioskMode';
+
+
+const getOrCreateDeviceId = async () => {
+  let id = await AsyncStorage.getItem('@secure_lock:device_id');
+  if (!id) {
+    id = `dispositivo-${Math.random().toString(36).substr(2, 9)}`;
+    await AsyncStorage.setItem('@secure_lock:device_id', id);
+  }
+  return id;
+};
 
 const CameraScannerScreen = ({ route, navigation }) => {
   const { roomId } = route?.params || {};
   const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  const { activateKioskMode } = useKioskMode();
+
+
 
   if (!permission) {
     // Camera permissions are still loading
@@ -32,50 +48,112 @@ const CameraScannerScreen = ({ route, navigation }) => {
   const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
     setScanned(true);
-    
+
     console.log('QR Escaneado:', data);
-    let invite_code;
+    let codigoLimpio = data;
+
     try {
       // Intentamos parsear por si viene en formato JSON
       const parsedData = JSON.parse(data);
-      invite_code = parsedData.invite_code || data;
+      codigoLimpio = parsedData.invite_code || parsedData.code || data;
     } catch (error) {
-      // Si no es JSON, asumimos que el dato es el código directamente
-      invite_code = data;
+      // Si no es JSON, verificamos si es un deep link de la app (ej. securelock://sala/UUID)
+      if (data.startsWith('securelock://sala/')) {
+        // Extraemos la parte después de /sala/ y antes de cualquier query param
+        codigoLimpio = data.split('securelock://sala/')[1]?.split('?')[0] || data;
+      }
     }
-    const id_unico = `dispositivo-${Math.random().toString(36).substr(2, 9)}`;
+
+    console.log('[DEBUG] Código procesado:', codigoLimpio);
+    console.log('🚀 INICIANDO PROCESO DE VINCULACIÓN');
 
     try {
-      // Guardar el id_unico generado localmente para usarlo en la conexión WebSocket
-      await SecureStore.setItemAsync('device_unique_id', id_unico);
+      // Validaciones Previas: Verificar UUID válido
+      if (!validateUUID(codigoLimpio)) {
+        console.warn('❌ Código no es UUID válido:', codigoLimpio);
+        Alert.alert(t('common.error'), "El código escaneado no es un UUID válido.");
+        setScanned(false);
+        return;
+      }
+
+      const deviceId = await getOrCreateDeviceId();
+      console.log('📱 Device ID:', deviceId);
+
+      // Validaciones Previas: Verificar deviceId no esté vacío
+      if (!deviceId) {
+        Alert.alert(t('common.error'), "No se pudo generar o recuperar un ID único para el dispositivo.");
+        setScanned(false);
+        return;
+      }
+
+      // Obtener y verificar el token de autenticación
+      const token = await SecureStore.getItemAsync('userToken');
       
+      if (!token) {
+        console.warn('❌ No hay token de usuario');
+        Alert.alert(t('common.error'), "No se encontró una sesión activa. Por favor, inicie sesión.");
+        setScanned(false);
+        return;
+      }
+
+      // Depuración Obligatoria: Logs antes del post
+      console.log('🔍 DATA ENVIADA:', JSON.stringify({ invite_code: codigoLimpio, id_unico: deviceId }));
+      console.log('🔑 HEADERS:', { 'Content-Type': 'application/json', 'Authorization': 'Bearer ***' });
+
+      console.log('📡 ENVIANDO PETICIÓN AL BACKEND');
+      console.log('🚀 Iniciando vinculación con...', { invite_code: codigoLimpio, id_unico: deviceId });
+
+      // Corregir la petición Axios con la estructura exacta
       const response = await api.post('/salas/link-device/', {
-        invite_code,
-        id_unico
+        invite_code: codigoLimpio, // Solo el UUID
+        id_unico: deviceId         // El ID único del dispositivo (persistente)
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
-      
+
+      console.log('✅ Vinculación exitosa:', response.data);
+
       Alert.alert(
-        t('scanner.linked_title') || "Vinculado",
-        t('scanner.linked_success') || "Dispositivo vinculado correctamente a la sala.",
+        t('scanner.linked_title') || 'Vinculado',
+        t('scanner.linked_success') || 'Dispositivo vinculado correctamente a la sala.',
         [
           {
-            text: "OK",
-            onPress: () => navigation.navigate('TargetLockScreen', { roomId: invite_code })
-          }
+            text: 'OK',
+            onPress: async () => {
+              try {
+                console.log('🔒 Activando Modo Kiosk...');
+                await activateKioskMode();
+              } catch (kioskError) {
+                console.warn('⚠️ Error activando modo kiosk:', kioskError);
+              }
+              // Trigger a refresh/navigate back or to the room depending on the app flow
+              navigation.navigate('TargetLockScreen', { roomId: codigoLimpio });
+            },
+          },
         ]
       );
     } catch (error) {
-      console.error("Error al vincular el dispositivo:", error);
-      Alert.alert(
-        t('common.error'),
-        t('scanner.link_error') || "No se pudo vincular el dispositivo. Intente de nuevo.",
-        [
-          {
-            text: t('common.retry') || "Reintentar",
-            onPress: () => setScanned(false)
-          }
-        ]
-      );
+      // Manejo de Errores Mejorado
+      console.error('💥 ERROR CRÍTICO EN FLUJO:', error);
+      
+      const msg = error.response?.data?.non_field_errors?.[0] || 
+                  error.response?.data?.detail || 
+                  error.response?.data?.error ||
+                  error.message ||
+                  'Error desconocido al vincular';
+
+      if (error.response) {
+        console.error('❌ ERROR BACKEND:', error.response.data);
+        console.error('❌ STATUS:', error.response.status);
+      } else {
+        console.error('❌ ERROR DE RED O EJECUCIÓN:', error.message);
+      }
+      
+      Alert.alert('Error de vinculación', msg);
+      setScanned(false);
     }
   };
 

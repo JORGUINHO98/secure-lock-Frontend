@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import logger from '../utils/logger';
 
 class SocketService {
   constructor() {
@@ -17,12 +18,12 @@ class SocketService {
     this.connectionParams = { id_unico, token };
 
     const url = `${this.WS_URL}/${id_unico}/?token=${token}`;
-    console.log('Intentando conectar WebSocket a:', url);
+    logger.log('Intentando conectar WebSocket a:', url);
 
     this.socket = new WebSocket(url);
 
     this.socket.onopen = () => {
-      console.log('✅ WebSocket Conectado');
+      logger.log('✅ WebSocket Conectado');
       if (this.reconnectTimeout) {
         clearTimeout(this.reconnectTimeout);
         this.reconnectTimeout = null;
@@ -32,25 +33,25 @@ class SocketService {
     this.socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('📩 Mensaje recibido:', data);
+        logger.log('📩 Mensaje recibido:', data);
         if (this.onMessageCallback) {
           this.onMessageCallback(data);
         }
       } catch (error) {
-        console.error('❌ Error al parsear mensaje:', error);
+        logger.error('❌ Error al parsear mensaje:', error);
       }
     };
 
     this.socket.onerror = (error) => {
-      console.error('⚠️ Error en WebSocket:', error.message);
+      logger.error('⚠️ Error en WebSocket:', error.message);
     };
 
     this.socket.onclose = (event) => {
-      console.log('🔌 WebSocket Cerrado:', event.reason);
+      logger.log('🔌 WebSocket Cerrado:', event.reason);
       
       // Reconexión automática si no fue un cierre intencional
       if (this.shouldReconnect) {
-        console.log('🔄 Intentando reconectar en 5 segundos...');
+        logger.log('🔄 Intentando reconectar en 5 segundos...');
         this.reconnectTimeout = setTimeout(() => {
           this.connect(id_unico, token, onMessageCallback);
         }, 5000);
@@ -59,7 +60,7 @@ class SocketService {
   }
 
   disconnect() {
-    console.log('🚫 Desconectando WebSocket manualmente...');
+    logger.log('🚫 Desconectando WebSocket manualmente...');
     this.shouldReconnect = false;
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
@@ -72,4 +73,5 @@ class SocketService {
 }
 
 export default new SocketService();
+
 

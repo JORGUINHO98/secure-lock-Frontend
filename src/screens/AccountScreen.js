@@ -3,12 +3,12 @@ import { Platform, View,
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  SafeAreaView, 
   StatusBar,
   ScrollView,
   Alert,
   Image,
   Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { User, LogOut, CreditCard, ChevronRight, Home, Users, Settings } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';

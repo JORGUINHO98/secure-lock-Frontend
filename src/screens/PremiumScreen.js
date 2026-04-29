@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
   Platform, View, Text, StyleSheet, TouchableOpacity,
-  SafeAreaView, StatusBar, Alert, ActivityIndicator,
+  StatusBar, Alert, ActivityIndicator,
   Dimensions, ScrollView, Modal, TextInput, KeyboardAvoidingView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Check, Home, Users, User, Star, CreditCard, ShieldCheck, Zap, Lock } from 'lucide-react-native';
 import { COLORS, SPACING } from '../theme/colors';
 import { useAppContext } from '../context/AppContext';

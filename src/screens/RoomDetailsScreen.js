@@ -3,7 +3,7 @@ import { Platform, View,
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  SafeAreaView,
+
   StatusBar,
   ScrollView,
   Image,
@@ -11,11 +11,14 @@ import { Platform, View,
   Modal,
   TextInput,
   Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Undo2, QrCode, Smartphone, Tablet, CheckCircle2, XCircle, Home, Users, User, Pencil, Trash2, Lock } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { COLORS } from '../theme/colors';
 import PremiumScreen from './PremiumScreen';
+import SkeletonLoader from '../components/SkeletonLoader';
+
 
 const { width } = Dimensions.get('window');
 
@@ -27,7 +30,15 @@ const RoomDetailsScreen = ({ route, navigation }) => {
   const [premiumVisible, setPremiumVisible] = useState(false);
   const [currentDevice, setCurrentDevice] = useState(null);
   const [deviceNameInput, setDeviceNameInput] = useState('');
+  const [isFetching, setIsFetching] = useState(true);
+  
   const isDark = theme === 'dark';
+
+  useEffect(() => {
+    // Simular carga inicial
+    setTimeout(() => setIsFetching(false), 800);
+  }, []);
+
 
   useEffect(() => {
     const addScannedDevice = async () => {
@@ -101,46 +112,73 @@ const RoomDetailsScreen = ({ route, navigation }) => {
 
       <View style={[styles.contentWrapper, { backgroundColor: COLORS.background.main }]}>
       <ScrollView style={[styles.content, { backgroundColor: COLORS.background.main }]}>
-        {devices.map((device) => (
-          <View key={device.id} style={[styles.deviceCard, { backgroundColor: COLORS.background.surface }]}>
-            <View style={styles.deviceIconBox}>
-                {device.name.toLowerCase().includes('tablet') ? (
-                    <Tablet size={60} color={COLORS.primary} />
-                ) : (
-                    <Smartphone size={60} color={COLORS.primary} />
-                )}
-            </View>
-            <View style={styles.deviceInfo}>
-              <View style={styles.deviceHeaderRow}>
-                <Text style={[styles.deviceName, { color: COLORS.text.main }]}>{device.name}</Text>
-                <View style={styles.deviceActions}>
-                    <TouchableOpacity onPress={() => handleEditDevice(device)}>
-                        <Pencil size={20} color={COLORS.primary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDeleteDevice(device.id)} style={{marginLeft: 15}}>
-                        <Trash2 size={20} color={COLORS.status.locked} />
-                    </TouchableOpacity>
+        {isFetching ? (
+          <View style={{ padding: 15 }}>
+            {[1, 2, 3].map(i => (
+              <SkeletonLoader key={i} width="100%" height={120} borderRadius={16} style={{ marginBottom: 12 }} />
+            ))}
+          </View>
+        ) : devices.length === 0 ? (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 100 }}>
+            <Smartphone size={64} color={COLORS.text.secondary} />
+            <Text style={{ color: COLORS.text.secondary, marginTop: 15 }}>{t('roomDetails.no_devices') || "No hay dispositivos en esta sala"}</Text>
+          </View>
+        ) : (
+          devices.map((device) => (
+            <View key={device.id} style={[styles.deviceCard, { backgroundColor: COLORS.background.surface }]}>
+              <View style={styles.deviceIconBox}>
+                  {device.name.toLowerCase().includes('tablet') ? (
+                      <Tablet size={60} color={COLORS.primary} />
+                  ) : (
+                      <Smartphone size={60} color={COLORS.primary} />
+                  )}
+              </View>
+              <View style={styles.deviceInfo}>
+                <View style={styles.deviceHeaderRow}>
+                  <Text style={[styles.deviceName, { color: COLORS.text.main }]}>{device.name}</Text>
+                  <View style={styles.deviceActions}>
+                      <TouchableOpacity 
+                        onPress={() => handleEditDevice(device)}
+                        accessibilityLabel={`Editar ${device.name}`}
+                        accessibilityRole="button"
+                      >
+                          <Pencil size={20} color={COLORS.primary} />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        onPress={() => handleDeleteDevice(device.id)} 
+                        style={{marginLeft: 15}}
+                        accessibilityLabel={`Eliminar ${device.name}`}
+                        accessibilityRole="button"
+                      >
+                          <Trash2 size={20} color={COLORS.status.locked} />
+                      </TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.statusRow}>
+                  {device.status === 'Activo' || device.status === 'Desbloqueado' ? (
+                      <View style={styles.statusBadge}>
+                          <CheckCircle2 size={24} color={COLORS.status.unlocked} />
+                          <Text style={[styles.statusText, { color: COLORS.status.unlocked }]}>{t('roomDetails.active') || "Activo"}</Text>
+                      </View>
+                  ) : (
+                      <View style={styles.statusBadge}>
+                          <XCircle size={24} color={COLORS.status.locked} />
+                          <Text style={[styles.statusText, { color: COLORS.status.locked }]}>{t('roomDetails.locked') || "Bloqueado"}</Text>
+                      </View>
+                  )}
+                  <TouchableOpacity 
+                    onPress={() => navigation.navigate('DeviceControl', { roomId, deviceId: device.id, roomName })}
+                    accessibilityLabel={`Ver detalles de ${device.name}`}
+                    accessibilityRole="button"
+                  >
+                      <Text style={[styles.verMasText, { color: COLORS.primary }]}>{t('common.viewMore') || "Ver Más"}</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.statusRow}>
-                {device.status === 'Activo' || device.status === 'Desbloqueado' ? (
-                    <View style={styles.statusBadge}>
-                        <CheckCircle2 size={24} color={COLORS.status.unlocked} />
-                        <Text style={[styles.statusText, { color: COLORS.status.unlocked }]}>{t('roomDetails.active') || "Activo"}</Text>
-                    </View>
-                ) : (
-                    <View style={styles.statusBadge}>
-                        <XCircle size={24} color={COLORS.status.locked} />
-                        <Text style={[styles.statusText, { color: COLORS.status.locked }]}>{t('roomDetails.locked') || "Bloqueado"}</Text>
-                    </View>
-                )}
-                <TouchableOpacity onPress={() => navigation.navigate('DeviceControl', { roomId, deviceId: device.id, roomName })}>
-                    <Text style={[styles.verMasText, { color: COLORS.primary }]}>{t('common.viewMore') || "Ver Más"}</Text>
-                </TouchableOpacity>
-              </View>
             </View>
-          </View>
-        ))}
+          ))
+        )}
+
         <View style={{ height: 100 }} />
       </ScrollView>
       </View>

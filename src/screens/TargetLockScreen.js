@@ -3,18 +3,24 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  SafeAreaView, 
   StatusBar, 
   Platform,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import * as SecureStore from 'expo-secure-store';
 import { Shield, Lock, Smartphone, RefreshCw, Unlock } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../context/AppContext';
 import { COLORS } from '../theme/colors';
 import socketService from '../services/socket';
+import { useKioskMode } from '../hooks/useKioskMode';
+
+
 
 const { width } = Dimensions.get('window');
 
@@ -24,6 +30,34 @@ const TargetLockScreen = ({ navigation }) => {
   const [isLocked, setIsLocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [deviceId, setDeviceId] = useState(null);
+  const [tapCount, setTapCount] = useState(0);
+
+  // Use the Kiosk Mode hook
+  const { isActive: kioskActive, activateKioskMode, deactivateKioskMode } = useKioskMode();
+
+  // Sync Kiosk mode with lock status from server
+  useEffect(() => {
+    if (isLocked) {
+      activateKioskMode();
+    }
+  }, [isLocked, activateKioskMode]);
+
+  // Handle secret gesture (5 taps) to exit Kiosk mode
+  const handleSecretGesture = () => {
+    const newCount = tapCount + 1;
+    if (newCount >= 5) {
+      deactivateKioskMode();
+      setTapCount(0);
+      Alert.alert("Admin", "Modo Kiosk desactivado manualmente.");
+    } else {
+      setTapCount(newCount);
+      // Reset count after 2 seconds of inactivity
+      setTimeout(() => setTapCount(0), 2000);
+    }
+  };
+
+
+
 
   useEffect(() => {
     const setupConnection = async () => {
@@ -69,12 +103,17 @@ const TargetLockScreen = ({ navigation }) => {
       <View style={styles.content}>
         {!isLocked ? (
           <View style={styles.statusView}>
-            <View style={styles.iconContainer}>
+            <TouchableOpacity 
+              activeOpacity={0.7} 
+              onPress={handleSecretGesture}
+              style={styles.iconContainer}
+            >
               <View style={[styles.glowCircle, { backgroundColor: 'rgba(0, 230, 118, 0.1)' }]}>
                 <Unlock size={100} color={COLORS.green} />
               </View>
-            </View>
+            </TouchableOpacity>
             <Text style={styles.brandTitle}>Secure Lock</Text>
+
             <Text style={styles.statusText}>{t('lock.device_free') || "Dispositivo Libre"}</Text>
             <View style={styles.remoteIndicator}>
               <Text style={styles.remoteText}>{t('lock.waiting') || "ESPERANDO ÓRDENES..."}</Text>
@@ -82,12 +121,17 @@ const TargetLockScreen = ({ navigation }) => {
           </View>
         ) : (
           <View style={styles.statusView}>
-            <View style={styles.iconContainer}>
+            <TouchableOpacity 
+              activeOpacity={0.7} 
+              onPress={handleSecretGesture}
+              style={styles.iconContainer}
+            >
               <View style={[styles.glowCircle, { backgroundColor: 'rgba(255, 49, 49, 0.1)' }]}>
                 <Lock size={100} color={COLORS.red} />
               </View>
-            </View>
+            </TouchableOpacity>
             <Text style={styles.brandTitle}>Secure Lock</Text>
+
             <Text style={styles.statusText}>{t('lock.device_locked') || "DISPOSITIVO BLOQUEADO"}</Text>
             <View style={[styles.remoteIndicator, { backgroundColor: COLORS.red }]}>
               <Text style={styles.remoteText}>{t('lock.protection_active') || "PROTECCIÓN ACTIVA"}</Text>
@@ -95,7 +139,16 @@ const TargetLockScreen = ({ navigation }) => {
           </View>
         )}
       </View>
+
+      {/* Lock Mode Indicator */}
+      {kioskActive && (
+        <View style={styles.lockIndicator}>
+          <Lock size={14} color="#FF3B30" />
+        </View>
+      )}
+
     </SafeAreaView>
+
   );
 };
 
@@ -166,7 +219,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
-  }
+  },
+  lockIndicator: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    right: 20,
+    backgroundColor: 'rgba(255, 59, 48, 0.1)',
+    padding: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 59, 48, 0.3)',
+    zIndex: 999,
+  },
 });
+
 
 export default TargetLockScreen;

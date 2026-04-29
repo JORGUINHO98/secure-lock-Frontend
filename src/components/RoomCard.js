@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Pencil, Trash2, ChevronRight, Home, Layout, Shield, Smartphone } from 'lucide-react-native';
 import { COLORS, SPACING, SHADOWS, TYPOGRAPHY } from '../theme/colors';
 import { useAppContext } from '../context/AppContext';
 
-const RoomCard = ({ room, onEdit, onDelete, onPress }) => {
+const RoomCard = memo(({ room, onEdit, onDelete, onPress, accessibilityLabel }) => {
   const { theme } = useAppContext();
   const isDark = theme === 'dark';
   const themeColors = isDark ? COLORS.dark : COLORS.light;
@@ -18,6 +18,8 @@ const RoomCard = ({ room, onEdit, onDelete, onPress }) => {
     <TouchableOpacity 
       activeOpacity={0.7} 
       onPress={onPress}
+      accessibilityLabel={accessibilityLabel || `Sala ${room.name}`}
+      accessibilityRole="button"
       style={[
         styles.container, 
         { 
@@ -26,6 +28,7 @@ const RoomCard = ({ room, onEdit, onDelete, onPress }) => {
         }
       ]}
     >
+
       <View style={[styles.iconWrapper, { backgroundColor: COLORS.primary }]}>
         {getIcon()}
       </View>
@@ -54,7 +57,8 @@ const RoomCard = ({ room, onEdit, onDelete, onPress }) => {
       </View>
     </TouchableOpacity>
   );
-};
+});
+
 
 const styles = StyleSheet.create({
   container: {

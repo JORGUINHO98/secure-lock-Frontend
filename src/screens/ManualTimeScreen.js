@@ -3,10 +3,10 @@ import { Platform, View,
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  SafeAreaView, 
   StatusBar,
   ScrollView,
   Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Undo2, Home, Users, User } from 'lucide-react-native';
 import { useAppContext } from '../context/AppContext';
 import { COLORS, SPACING } from '../theme/colors';
