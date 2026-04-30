@@ -103,6 +103,45 @@ const AuthScreen = ({ navigation }) => {
     setUser(normalizedUser);
   };
 
+  const registerUser = async () => {
+    const payload = {
+      username: form.email,
+      email: form.email,
+      password: form.password,
+      full_name: form.fullName.trim(),
+    };
+
+    try {
+      await api.post('/users/register/', payload);
+      return;
+    } catch (error) {
+      const status = error.response?.status;
+      const data = error.response?.data;
+
+      const rejectsFullName =
+        status === 400 &&
+        data &&
+        typeof data === 'object' &&
+        !Array.isArray(data) &&
+        Object.prototype.hasOwnProperty.call(data, 'full_name');
+
+      if (rejectsFullName) {
+        const { full_name, ...payloadWithoutFullName } = payload;
+        await api.post('/users/register/', payloadWithoutFullName);
+        return;
+      }
+
+      // Compatibilidad con APIs antiguas que exponían creación en /users/
+      if (status === 404) {
+        const { full_name, ...legacyPayload } = payload;
+        await api.post('/users/', legacyPayload);
+        return;
+      }
+
+      throw error;
+    }
+  };
+
   const handleSubmit = async () => {
     setErrors({});
     setIsLoading(true);
@@ -126,12 +165,7 @@ const AuthScreen = ({ navigation }) => {
         }
 
         await SecureStore.deleteItemAsync('userToken');
-        await api.post('/users/register/', {
-          username: form.email,
-          email: form.email,
-          password: form.password,
-          full_name: form.fullName.trim(),
-        });
+        await registerUser();
 
         await performLogin(form.email, form.password);
       }
