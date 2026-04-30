@@ -126,7 +126,7 @@ const AuthScreen = ({ navigation }) => {
         }
 
         await SecureStore.deleteItemAsync('userToken');
-        await api.post('/users/', {
+        await api.post('/users/register/', {
           username: form.email,
           email: form.email,
           password: form.password,
