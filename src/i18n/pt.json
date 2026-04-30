@@ -27,7 +27,16 @@
     "email": "Email",
     "password": "Senha",
     "confirmPassword": "Confirmar Senha",
-    "createAccount": "Criar Conta"
+    "createAccount": "Criar Conta",
+    "role": "Função",
+    "error_name_short": "O nome deve ter pelo menos 2 caracteres",
+    "error_email": "O email é obrigatório",
+    "error_email_invalid": "Email inválido",
+    "error_email_length": "O email não pode exceder 255 caracteres",
+    "error_pass_requirements": "A senha deve ter pelo menos 8 caracteres com letras e números",
+    "error_pass_mismatch": "As senhas não coincidem",
+    "error_role_invalid": "Função inválida. Deve ser CREATOR ou TARGET",
+    "error_generic": "Erro de conexão"
   },
   "home": {
     "welcome_user": "Bem-vindo: {{name}}",

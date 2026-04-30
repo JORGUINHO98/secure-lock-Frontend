@@ -22,7 +22,7 @@ import { useAuth, useTheme } from '../context';
 import api from '../services/api';
 
 import logger from '../utils/logger';
-import { validateEmail } from '../utils/validators';
+import { validateEmail, validatePassword, validateRole } from '../utils/validators';
 
 
 const { width } = Dimensions.get('window');
@@ -40,6 +40,7 @@ const AuthScreen = ({ navigation }) => {
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'CREATOR',
   });
 
   const isDark = theme === 'dark';
@@ -53,9 +54,8 @@ const AuthScreen = ({ navigation }) => {
   };
 
   const performLogin = async (email, password) => {
-    // 1. Login (correcto)
     const tokenResponse = await api.post('/auth/token/', {
-      username: email,
+      email,
       password,
     });
 
@@ -66,19 +66,12 @@ const AuthScreen = ({ navigation }) => {
       await SecureStore.setItemAsync('refreshToken', refresh);
     }
 
-    // 2. 🔥 AQUÍ ESTABA EL PROBLEMA
-    // Intentas llamar /users/me/ pero NO existe
-    // Entonces hacemos fallback seguro:
-
     let userData = null;
 
     try {
       const profileResponse = await api.get('/users/me/');
       userData = profileResponse.data;
     } catch (e) {
-      console.log('No existe /users/me/, usando fallback');
-
-      // fallback mínimo para que no rompa la app
       userData = {
         email,
         username: email,
@@ -105,41 +98,14 @@ const AuthScreen = ({ navigation }) => {
 
   const registerUser = async () => {
     const payload = {
-      username: form.email,
       email: form.email,
       password: form.password,
       full_name: form.fullName.trim(),
+      role: form.role,
     };
 
-    try {
-      await api.post('/users/register/', payload);
-      return;
-    } catch (error) {
-      const status = error.response?.status;
-      const data = error.response?.data;
-
-      const rejectsFullName =
-        status === 400 &&
-        data &&
-        typeof data === 'object' &&
-        !Array.isArray(data) &&
-        Object.prototype.hasOwnProperty.call(data, 'full_name');
-
-      if (rejectsFullName) {
-        const { full_name, ...payloadWithoutFullName } = payload;
-        await api.post('/users/register/', payloadWithoutFullName);
-        return;
-      }
-
-      // Compatibilidad con APIs antiguas que exponían creación en /users/
-      if (status === 404) {
-        const { full_name, ...legacyPayload } = payload;
-        await api.post('/users/', legacyPayload);
-        return;
-      }
-
-      throw error;
-    }
+    const response = await api.post('/users/register/', payload);
+    return response.data;
   };
 
   const handleSubmit = async () => {
@@ -151,10 +117,14 @@ const AuthScreen = ({ navigation }) => {
       } else {
         // Validaciones locales con feedback inline
         const newErrors = {};
-        if (!form.fullName.trim()) newErrors.fullName = t('auth.error_name') || 'El nombre es obligatorio';
+        if (form.fullName.trim() && form.fullName.trim().length < 2) {
+          newErrors.fullName = t('auth.error_name_short') || 'El nombre debe tener al menos 2 caracteres';
+        }
         if (!form.email.trim()) newErrors.email = t('auth.error_email') || 'El correo es obligatorio';
         else if (!validateEmail(form.email)) newErrors.email = t('auth.error_email_invalid') || 'Correo inválido';
-        if (form.password.length < 6) newErrors.password = t('auth.error_pass_short') || 'Mínimo 6 caracteres';
+        else if (form.email.trim().length > 255) newErrors.email = t('auth.error_email_length') || 'El email no puede superar 255 caracteres';
+        if (!validatePassword(form.password)) newErrors.password = t('auth.error_pass_requirements') || 'Mínimo 8 caracteres y debe incluir letras y números';
+        if (!validateRole(form.role)) newErrors.role = t('auth.error_role_invalid') || 'Rol inválido';
 
         if (form.password !== form.confirmPassword) newErrors.confirmPassword = t('auth.error_pass_mismatch') || 'No coinciden';
 
@@ -165,9 +135,25 @@ const AuthScreen = ({ navigation }) => {
         }
 
         await SecureStore.deleteItemAsync('userToken');
-        await registerUser();
+        const registerData = await registerUser();
 
-        await performLogin(form.email, form.password);
+        if (registerData?.tokens?.access) {
+          await SecureStore.setItemAsync('userToken', registerData.tokens.access);
+          if (registerData.tokens.refresh) {
+            await SecureStore.setItemAsync('refreshToken', registerData.tokens.refresh);
+          }
+          if (registerData.user) {
+            setUser({
+              ...registerData.user,
+              name: registerData.user.full_name || registerData.user.email?.split('@')[0] || 'Usuario',
+              avatar: registerData.user.avatar || null,
+            });
+          } else {
+            await performLogin(form.email, form.password);
+          }
+        } else {
+          await performLogin(form.email, form.password);
+        }
       }
       navigation.navigate('Home');
     } catch (error) {
@@ -178,7 +164,16 @@ const AuthScreen = ({ navigation }) => {
       let message = t('auth.error_generic') || 'Error de conexión';
 
       if (data) {
-        if (typeof data === 'string') {
+        if (data.errors && typeof data.errors === 'object') {
+          const mappedErrors = {};
+          Object.entries(data.errors).forEach(([field, value]) => {
+            const normalizedField = field === 'full_name' ? 'fullName' : field;
+            mappedErrors[normalizedField] = Array.isArray(value) ? value[0] : value;
+          });
+          setErrors(mappedErrors);
+          const firstError = Object.values(mappedErrors)[0];
+          if (firstError) message = firstError;
+        } else if (typeof data === 'string') {
           message = data;
         } else if (data.detail || data.error) {
           message = data.detail || data.error;
@@ -257,6 +252,30 @@ const AuthScreen = ({ navigation }) => {
 
             {/* Form */}
             <View style={styles.form}>
+              {activeTab === 'register' && (
+                <View style={styles.roleSection}>
+                  <Text style={[styles.roleLabel, { color: themeColors.text }]}>{t('auth.role') || 'Rol'}</Text>
+                  <View style={[styles.roleContainer, { backgroundColor: isDark ? '#2D3748' : '#F7FAFC' }]}>
+                    <TouchableOpacity
+                      style={[styles.roleButton, form.role === 'CREATOR' && styles.activeRoleButton]}
+                      onPress={() => handleInputChange('role', 'CREATOR')}
+                    >
+                      <Text style={[styles.roleButtonText, { color: form.role === 'CREATOR' ? '#FFF' : themeColors.textSecondary }]}>
+                        CREATOR
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.roleButton, form.role === 'TARGET' && styles.activeRoleButton]}
+                      onPress={() => handleInputChange('role', 'TARGET')}
+                    >
+                      <Text style={[styles.roleButtonText, { color: form.role === 'TARGET' ? '#FFF' : themeColors.textSecondary }]}>
+                        TARGET
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  {errors.role ? <Text style={styles.roleError}>{errors.role}</Text> : null}
+                </View>
+              )}
               {activeTab === 'register' && (
                 <CustomInput
                   label={t('auth.fullName')}
@@ -395,6 +414,39 @@ const styles = StyleSheet.create({
   },
   form: {
     width: '100%',
+  },
+  roleSection: {
+    marginBottom: SPACING.md,
+  },
+  roleLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: SPACING.xs,
+  },
+  roleContainer: {
+    flexDirection: 'row',
+    height: 52,
+    borderRadius: 14,
+    padding: 5,
+  },
+  roleButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  activeRoleButton: {
+    backgroundColor: COLORS.primary,
+    ...SHADOWS.small,
+  },
+  roleButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  roleError: {
+    color: '#EF4444',
+    marginTop: 6,
+    fontSize: 12,
   },
   button: {
     backgroundColor: COLORS.primary,

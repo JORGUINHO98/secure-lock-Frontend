@@ -6,6 +6,11 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://3.139.201.71:8000/ap
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
 });
 
 // Rutas públicas que NO deben llevar token de autorización
@@ -63,6 +68,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const method = originalRequest?.method?.toLowerCase();
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Evitar bucles infinitos si la ruta es el propio refresh
@@ -79,6 +85,22 @@ apiClient.interceptors.response.use(
         // El refresco falló, redirigir al usuario o manejar el error
         error.friendlyMessage = 'Su sesión ha expirado definitivamente. Por favor, inicie sesión de nuevo.';
         return Promise.reject(error);
+      }
+    }
+
+    // Retry con backoff exponencial para errores de servidor en requests seguras
+    const shouldRetry500 =
+      error.response?.status >= 500 &&
+      error.response?.status < 600 &&
+      ['get', 'head', 'options'].includes(method);
+
+    if (shouldRetry500) {
+      originalRequest._retry500Count = originalRequest._retry500Count || 0;
+      if (originalRequest._retry500Count < 3) {
+        originalRequest._retry500Count += 1;
+        const delayMs = 500 * (2 ** (originalRequest._retry500Count - 1));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        return apiClient(originalRequest);
       }
     }
 

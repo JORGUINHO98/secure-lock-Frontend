@@ -27,7 +27,16 @@
     "email": "Email",
     "password": "Contraseña",
     "confirmPassword": "Confirmar Contraseña",
-    "createAccount": "Crear Cuenta"
+    "createAccount": "Crear Cuenta",
+    "role": "Rol",
+    "error_name_short": "El nombre debe tener al menos 2 caracteres",
+    "error_email": "El correo es obligatorio",
+    "error_email_invalid": "Correo inválido",
+    "error_email_length": "El email no puede superar 255 caracteres",
+    "error_pass_requirements": "La contraseña debe tener al menos 8 caracteres, letras y números",
+    "error_pass_mismatch": "Las contraseñas no coinciden",
+    "error_role_invalid": "Rol inválido. Debe ser CREATOR o TARGET",
+    "error_generic": "Error de conexión"
   },
   "home": {
     "welcome_user": "Bienvenido: {{name}}",

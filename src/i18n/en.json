@@ -27,7 +27,16 @@
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm Password",
-    "createAccount": "Create Account"
+    "createAccount": "Create Account",
+    "role": "Role",
+    "error_name_short": "Name must be at least 2 characters",
+    "error_email": "Email is required",
+    "error_email_invalid": "Invalid email",
+    "error_email_length": "Email cannot exceed 255 characters",
+    "error_pass_requirements": "Password must have at least 8 characters with letters and numbers",
+    "error_pass_mismatch": "Passwords do not match",
+    "error_role_invalid": "Invalid role. Must be CREATOR or TARGET",
+    "error_generic": "Connection error"
   },
   "home": {
     "welcome_user": "Welcome: {{name}}",

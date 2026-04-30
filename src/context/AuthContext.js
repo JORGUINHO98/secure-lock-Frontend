@@ -90,6 +90,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await SecureStore.deleteItemAsync('userToken');
+      await SecureStore.deleteItemAsync('refreshToken');
+      await SecureStore.deleteItemAsync('userData');
       setUser(null);
       setIsPremium(false);
     } catch (error) {

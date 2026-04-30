@@ -8,7 +8,14 @@ export const validateEmail = (email) => {
 };
 
 export const validatePassword = (password) => {
-  return password && password.length >= 6;
+  if (!password || password.length < 8) return false;
+  const hasLetter = /[A-Za-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  return hasLetter && hasNumber;
+};
+
+export const validateRole = (role) => {
+  return role === 'CREATOR' || role === 'TARGET';
 };
 
 export const validateUUID = (uuid) => {
