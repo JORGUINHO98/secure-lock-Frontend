@@ -253,30 +253,6 @@ const AuthScreen = ({ navigation }) => {
             {/* Form */}
             <View style={styles.form}>
               {activeTab === 'register' && (
-                <View style={styles.roleSection}>
-                  <Text style={[styles.roleLabel, { color: themeColors.text }]}>{t('auth.role') || 'Rol'}</Text>
-                  <View style={[styles.roleContainer, { backgroundColor: isDark ? '#2D3748' : '#F7FAFC' }]}>
-                    <TouchableOpacity
-                      style={[styles.roleButton, form.role === 'CREATOR' && styles.activeRoleButton]}
-                      onPress={() => handleInputChange('role', 'CREATOR')}
-                    >
-                      <Text style={[styles.roleButtonText, { color: form.role === 'CREATOR' ? '#FFF' : themeColors.textSecondary }]}>
-                        CREATOR
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.roleButton, form.role === 'TARGET' && styles.activeRoleButton]}
-                      onPress={() => handleInputChange('role', 'TARGET')}
-                    >
-                      <Text style={[styles.roleButtonText, { color: form.role === 'TARGET' ? '#FFF' : themeColors.textSecondary }]}>
-                        TARGET
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                  {errors.role ? <Text style={styles.roleError}>{errors.role}</Text> : null}
-                </View>
-              )}
-              {activeTab === 'register' && (
                 <CustomInput
                   label={t('auth.fullName')}
                   placeholder="Juan Pérez"
@@ -317,6 +293,31 @@ const AuthScreen = ({ navigation }) => {
                   onChangeText={(val) => handleInputChange('confirmPassword', val)}
                   error={errors.confirmPassword}
                 />
+              )}
+
+              {activeTab === 'register' && (
+                <View style={styles.roleSection}>
+                  <Text style={[styles.roleLabel, { color: themeColors.text }]}>{t('auth.role') || 'Rol'}</Text>
+                  <View style={[styles.roleContainer, { backgroundColor: isDark ? '#2D3748' : '#F7FAFC' }]}>
+                    <TouchableOpacity
+                      style={[styles.roleButton, form.role === 'CREATOR' && styles.activeRoleButton]}
+                      onPress={() => handleInputChange('role', 'CREATOR')}
+                    >
+                      <Text style={[styles.roleButtonText, { color: form.role === 'CREATOR' ? '#FFF' : themeColors.textSecondary }]}>
+                        CREATOR
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.roleButton, form.role === 'TARGET' && styles.activeRoleButton]}
+                      onPress={() => handleInputChange('role', 'TARGET')}
+                    >
+                      <Text style={[styles.roleButtonText, { color: form.role === 'TARGET' ? '#FFF' : themeColors.textSecondary }]}>
+                        TARGET
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  {errors.role ? <Text style={styles.roleError}>{errors.role}</Text> : null}
+                </View>
               )}
 
               <TouchableOpacity 
